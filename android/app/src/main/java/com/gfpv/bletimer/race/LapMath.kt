@@ -71,3 +71,37 @@ data class RaceStats(
         }
     }
 }
+
+/** Fastest 3 consecutive laps of a race (hole shot excluded) and the laps that make it up. */
+fun bestThreeConsecutive(laps: List<Lap>): Pair<Long, List<Lap>>? {
+    val byIndex = laps.associateBy { it.index }
+    return laps.filter { !it.isHoleShot }
+        .mapNotNull { lap -> consecutiveTime(laps, lap, 3)?.let { it to lap } }
+        .minByOrNull { it.first }
+        ?.let { (total, last) -> total to (last.index - 2..last.index).map { byIndex.getValue(it) } }
+}
+
+/** All-time records and per-race series for the History charts, as in fpv-android-lap-timer's Stats screen. */
+data class Progression(
+    /** Best lap of each race, oldest race first (null when a race has no full lap). */
+    val bestLaps: List<Long?>,
+    /** Best 3 consecutive laps of each race, oldest race first. */
+    val bestThrees: List<Long?>,
+    val bestLapMs: Long?,
+    val bestThreeMs: Long?,
+    val bestThreeLaps: List<Long>?,
+) {
+    companion object {
+        fun of(racesOldestFirst: List<List<Lap>>): Progression {
+            val stats = racesOldestFirst.map { RaceStats.of(it) }
+            val bestThree = racesOldestFirst.mapNotNull { bestThreeConsecutive(it) }.minByOrNull { it.first }
+            return Progression(
+                bestLaps = stats.map { it.bestMs },
+                bestThrees = stats.map { it.bestThreeMs },
+                bestLapMs = stats.mapNotNull { it.bestMs }.minOrNull(),
+                bestThreeMs = bestThree?.first,
+                bestThreeLaps = bestThree?.second?.map { it.timeMs },
+            )
+        }
+    }
+}

@@ -3,6 +3,8 @@ package com.gfpv.bletimer
 import com.gfpv.bletimer.audio.VoiceLanguage
 import com.gfpv.bletimer.ble.AnnouncerType
 import com.gfpv.bletimer.race.Lap
+import com.gfpv.bletimer.race.Progression
+import com.gfpv.bletimer.race.bestThreeConsecutive
 import com.gfpv.bletimer.race.RaceStats
 import com.gfpv.bletimer.race.consecutiveTime
 import com.gfpv.bletimer.race.formatClock
@@ -63,6 +65,33 @@ class LapMathTest {
         assertEquals(30_000L, s.bestThreeMs)
         assertEquals(2_500L, s.holeShotMs)
         assertEquals(1_118L, s.stdDevMs) // population std dev of 10, 11, 9, 12 s
+    }
+
+    @Test
+    fun bestThreeConsecutiveLaps() {
+        val (total, best) = bestThreeConsecutive(laps)!!
+        assertEquals(30_000L, total)
+        assertEquals(listOf(1, 2, 3), best.map { it.index })
+        assertNull(bestThreeConsecutive(laps.take(3)))
+    }
+
+    @Test
+    fun progressionAcrossRaces() {
+        val older = listOf(Lap(0, 3_000), Lap(1, 12_000), Lap(2, 12_500))
+        val newer = laps
+        val p = Progression.of(listOf(older, newer))
+        assertEquals(listOf(12_000L, 9_000L), p.bestLaps)
+        assertEquals(listOf(null, 30_000L), p.bestThrees)
+        assertEquals(9_000L, p.bestLapMs)
+        assertEquals(30_000L, p.bestThreeMs)
+        assertEquals(listOf(10_000L, 11_000L, 9_000L), p.bestThreeLaps)
+    }
+
+    @Test
+    fun emptyProgression() {
+        val p = Progression.of(emptyList())
+        assertNull(p.bestLapMs)
+        assertNull(p.bestThreeLaps)
     }
 
     @Test

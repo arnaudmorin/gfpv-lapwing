@@ -210,7 +210,7 @@ The first lap reported is the hole shot (`HS`), the time from the start tone to 
 
 ### History
 
-Every race with at least one lap is saved on the phone. The `History` tab lists them with their date, pilot, number of laps and best lap. Tap a race to see all its laps, the hole shot, and its consistency (standard deviation of the lap times: lower is more consistent). Races can be shared as text or deleted.
+Every race with at least one lap is saved on the phone. The `History` tab lists them with their date, pilot, number of laps and best lap. At the top, two tiles show your all-time best lap and best 3 consecutive laps (with the three lap times), and once two races are saved a `Progression` card charts the best lap and the best 3 consecutive laps of each race over time, oldest on the left: lower is faster. Tap a race to see all its laps, the hole shot, and its consistency (standard deviation of the lap times: lower is more consistent). Races can be shared as text or deleted.
 
 # Credits
 

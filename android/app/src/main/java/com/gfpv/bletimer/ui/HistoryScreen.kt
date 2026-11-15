@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gfpv.bletimer.ble.Frequencies
 import com.gfpv.bletimer.data.RaceWithLaps
 import com.gfpv.bletimer.race.Lap
+import com.gfpv.bletimer.race.Progression
 import com.gfpv.bletimer.race.RaceStats
 import com.gfpv.bletimer.race.consecutiveTime
 import com.gfpv.bletimer.race.formatSeconds
@@ -66,6 +67,12 @@ fun HistoryScreen(vm: MainViewModel) {
 
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item { Spacer(Modifier.height(8.dp)) }
+        item {
+            // races are newest first; the charts read oldest to newest
+            val progression = remember(races) { Progression.of(races.reversed().map { it.toLaps() }) }
+            HistorySummary(progression, races.size)
+        }
+        item { Text("Races", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp)) }
         items(races, key = { it.race.id }) { r ->
             val stats = remember(r) { RaceStats.of(r.toLaps()) }
             Card(onClick = { selectedId = r.race.id }, modifier = Modifier.fillMaxWidth()) {

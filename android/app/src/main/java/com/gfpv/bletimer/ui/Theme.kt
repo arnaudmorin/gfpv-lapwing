@@ -31,4 +31,8 @@ object ChartColors {
     val crossing = Color(0x5550D27A)
     val enter = Color(0xFFE8402F)
     val exit = Color(0xFFE5822E)
+
+    /** Best lap / best 3 consecutive, same colours as fpv-android-lap-timer. */
+    val bestLap = Color(0xFF4ADE80)
+    val bestThree = Color(0xFFFBBF24)
 }
