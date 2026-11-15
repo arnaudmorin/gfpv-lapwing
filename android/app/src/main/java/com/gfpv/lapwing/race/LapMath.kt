@@ -1,6 +1,6 @@
 package com.gfpv.lapwing.race
 
-import com.gfpv.lapwing.audio.VoiceLanguage
+import com.gfpv.lapwing.audio.Callouts
 import com.gfpv.lapwing.ble.AnnouncerType
 import java.util.Locale
 import kotlin.math.sqrt
@@ -31,16 +31,16 @@ fun consecutiveTime(laps: List<Lap>, lap: Lap, n: Int): Long? {
 }
 
 /** Text to speak for a new lap, or null if the announcer type has nothing to say (none, beep, not enough laps). */
-fun calloutFor(type: AnnouncerType, lang: VoiceLanguage, pilot: String, laps: List<Lap>, lap: Lap): String? {
+fun calloutFor(type: AnnouncerType, callouts: Callouts, pilot: String, laps: List<Lap>, lap: Lap): String? {
     if (lap.isHoleShot) {
         return if (type in listOf(AnnouncerType.LAP_TIME, AnnouncerType.TWO_LAPS, AnnouncerType.THREE_LAPS)) {
-            lang.holeShot(lap.timeMs)
+            callouts.holeShot(pilot, lap.timeMs)
         } else null
     }
     return when (type) {
-        AnnouncerType.LAP_TIME -> lang.lap(pilot, lap.index, lap.timeMs)
-        AnnouncerType.TWO_LAPS -> consecutiveTime(laps, lap, 2)?.let { lang.laps(pilot, 2, it) }
-        AnnouncerType.THREE_LAPS -> consecutiveTime(laps, lap, 3)?.let { lang.laps(pilot, 3, it) }
+        AnnouncerType.LAP_TIME -> callouts.lap(pilot, lap.index, lap.timeMs)
+        AnnouncerType.TWO_LAPS -> consecutiveTime(laps, lap, 2)?.let { callouts.laps(pilot, 2, it) }
+        AnnouncerType.THREE_LAPS -> consecutiveTime(laps, lap, 3)?.let { callouts.laps(pilot, 3, it) }
         AnnouncerType.NONE, AnnouncerType.BEEP -> null
     }
 }

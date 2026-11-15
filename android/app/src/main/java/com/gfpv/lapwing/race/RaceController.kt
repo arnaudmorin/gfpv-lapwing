@@ -61,8 +61,8 @@ class RaceController(
             announcer.rate = cfg.announcerRate
             val voice = cfg.announcerType != AnnouncerType.NONE
             if (voice) {
-                announcer.speakAndWait(announcer.language.armQuad)
-                announcer.speakAndWait(announcer.language.startOnTone)
+                announcer.speakAndWait(announcer.callouts.arm)
+                announcer.speakAndWait(announcer.callouts.start)
             }
             delay(Random.nextLong(1_000, 5_000))
             try {
@@ -88,7 +88,7 @@ class RaceController(
         }
         scope.launch {
             runCatching { connection.stopTimer() }.onFailure { Log.w(TAG, "stop failed", it) }
-            if (!wasCountingDown && config.announcerType != AnnouncerType.NONE) announcer.speak(announcer.language.raceStopped)
+            if (!wasCountingDown && config.announcerType != AnnouncerType.NONE) announcer.speak(announcer.callouts.stopped)
             raceId?.let { id ->
                 if (dao.lapCount(id) == 0) dao.deleteRace(id) else dao.finishRace(id, System.currentTimeMillis())
             }
@@ -115,7 +115,7 @@ class RaceController(
         when (cfg.announcerType) {
             AnnouncerType.NONE -> Unit
             AnnouncerType.BEEP -> scope.launch { announcer.tone(330, 100) }
-            else -> calloutFor(cfg.announcerType, announcer.language, cfg.pilotName, _state.value.laps, lap)?.let { announcer.speak(it) }
+            else -> calloutFor(cfg.announcerType, announcer.callouts, cfg.pilotName, _state.value.laps, lap)?.let { announcer.speak(it) }
         }
     }
 

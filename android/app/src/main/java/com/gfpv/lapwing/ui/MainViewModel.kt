@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gfpv.lapwing.LapwingApplication
+import com.gfpv.lapwing.audio.Callout
 import com.gfpv.lapwing.audio.VoiceLanguage
 import com.gfpv.lapwing.ble.BundledFirmware
 import com.gfpv.lapwing.ble.DeviceInfo
@@ -187,6 +188,25 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     suspend fun isVoiceAvailable(language: VoiceLanguage): Boolean = container.announcer.isAvailable(language)
+
+    // ---- custom callout texts (phone setting, per language) ----
+
+    val customCallouts: StateFlow<Map<VoiceLanguage, Map<Callout, String>>> = container.voicePrefs.custom
+
+    fun setCustomCallout(language: VoiceLanguage, callout: Callout, text: String) =
+        container.voicePrefs.setCustom(language, callout, text)
+
+    fun resetCallouts(language: VoiceLanguage) = container.voicePrefs.resetCustom(language)
+
+    /** Speaks one callout with sample values, as it would sound during a race. */
+    fun testCallout(callout: Callout, config: TimerConfig) {
+        container.scope.launch {
+            val a = container.announcer
+            a.rate = config.announcerRate
+            val sampleMs = if (callout == Callout.LAPS) 70_850L else 23_450L
+            a.speak(a.callouts.text(callout, pilot = config.pilotName, lap = 3, count = 3, ms = sampleMs))
+        }
+    }
 
     // ---- calibration ----
 

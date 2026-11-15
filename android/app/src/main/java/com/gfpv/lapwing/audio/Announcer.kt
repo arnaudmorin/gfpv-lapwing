@@ -47,6 +47,9 @@ class Announcer(context: Context, private val voicePrefs: VoicePrefs) {
     /** Current callout language (a phone setting, see [VoicePrefs]). */
     val language: VoiceLanguage get() = voicePrefs.language.value
 
+    /** Callout texts in the current language, including the pilot's own texts. */
+    val callouts: Callouts get() = voicePrefs.callouts()
+
     private suspend fun prepare(): Boolean {
         val ok = withTimeoutOrNull(3_000) { ready.await() } ?: false
         if (ok) {

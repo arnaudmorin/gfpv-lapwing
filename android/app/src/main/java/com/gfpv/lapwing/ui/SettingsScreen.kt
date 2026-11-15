@@ -5,6 +5,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,10 +22,16 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -37,8 +44,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +63,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gfpv.lapwing.R
+import com.gfpv.lapwing.audio.Callout
 import com.gfpv.lapwing.audio.VoiceLanguage
 import com.gfpv.lapwing.ble.AnnouncerType
 import com.gfpv.lapwing.ble.Frequencies
@@ -134,6 +145,9 @@ fun SettingsScreen(vm: MainViewModel) {
         ) { vm.updateConfig(cfg.copy(announcerRateX10 = it)) }
         VoiceLanguagePicker(vm)
         OutlinedButton(onClick = { vm.testVoice(cfg) }) { Text("Test voice") }
+
+        Section("Callouts")
+        CalloutEditor(vm, cfg)
 
         Section("Timer")
         TimerInfo(vm)
@@ -227,6 +241,58 @@ private fun VoiceLanguagePicker(vm: MainViewModel) {
             style = MaterialTheme.typography.bodySmall,
         )
     }
+}
+
+/** Custom callout texts for the current voice language, stored on the phone. */
+@Composable
+private fun CalloutEditor(vm: MainViewModel, cfg: TimerConfig) {
+    val language by vm.voiceLanguage.collectAsStateWithLifecycle()
+    val custom by vm.customCallouts.collectAsStateWithLifecycle()
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    var generation by remember { mutableIntStateOf(0) } // bumped by the reset button to reload the fields
+
+    Row(
+        Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("Customize the ${language.label} callouts", Modifier.weight(1f))
+        Icon(
+            if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+            contentDescription = if (expanded) "Collapse" else "Expand",
+        )
+    }
+    if (!expanded) return
+
+    Text(
+        "Leave a field empty to use the built-in text. {pilot}, {lap}, {count} and {time} are replaced by " +
+            "the pilot name, the lap number, the number of laps and the time. Tap ▶ to listen.",
+        style = MaterialTheme.typography.bodySmall,
+    )
+    Callout.entries.forEach { c ->
+        key(language, c, generation) {
+            // Local state so typing stays smooth; every change is stored right away.
+            var text by remember { mutableStateOf(custom[language]?.get(c) ?: language.default(c)) }
+            OutlinedTextField(
+                value = text,
+                onValueChange = {
+                    text = it
+                    vm.setCustomCallout(language, c, it)
+                },
+                label = { Text(c.label) },
+                placeholder = { Text(language.default(c)) },
+                supportingText = if (c.placeholders.isEmpty()) null else ({ Text(c.placeholders.joinToString(" ")) }),
+                trailingIcon = {
+                    IconButton(onClick = { vm.testCallout(c, cfg) }) { Icon(Icons.Filled.PlayArrow, "Listen") }
+                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+    TextButton(onClick = {
+        vm.resetCallouts(language)
+        generation++
+    }) { Text("Restore the built-in ${language.label} callouts") }
 }
 
 @Composable

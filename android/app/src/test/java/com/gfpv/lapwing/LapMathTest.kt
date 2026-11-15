@@ -1,5 +1,7 @@
 package com.gfpv.lapwing
 
+import com.gfpv.lapwing.audio.Callout
+import com.gfpv.lapwing.audio.Callouts
 import com.gfpv.lapwing.audio.VoiceLanguage
 import com.gfpv.lapwing.ble.AnnouncerType
 import com.gfpv.lapwing.race.Lap
@@ -13,7 +15,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 private fun calloutFor(lang: VoiceLanguage, type: AnnouncerType, pilot: String, laps: List<Lap>, lap: Lap) =
-    com.gfpv.lapwing.race.calloutFor(type, lang, pilot, laps, lap)
+    com.gfpv.lapwing.race.calloutFor(type, Callouts(lang), pilot, laps, lap)
 
 class LapMathTest {
     private val laps = listOf(Lap(0, 2_500), Lap(1, 10_000), Lap(2, 11_000), Lap(3, 9_000), Lap(4, 12_000))
@@ -49,6 +51,34 @@ class LapMathTest {
         assertEquals("Ace Tour 2, 11,00", calloutFor(fr, AnnouncerType.LAP_TIME, "Ace", laps, laps[2]))
         assertEquals("2 tours 21,00", calloutFor(fr, AnnouncerType.TWO_LAPS, "", laps, laps[2]))
         assertEquals("3 tours 30,00", calloutFor(fr, AnnouncerType.THREE_LAPS, "", laps, laps[3]))
+    }
+
+    @Test
+    fun startCallouts() {
+        val fr = Callouts(VoiceLanguage.FRENCH)
+        assertEquals("Armez votre quad", fr.arm)
+        assertEquals("Départ au bip dans moins de cinq secondes", fr.start)
+        assertEquals("Course arrêtée", fr.stopped)
+    }
+
+    @Test
+    fun customCallouts() {
+        val custom = Callouts(
+            VoiceLanguage.FRENCH,
+            mapOf(
+                Callout.LAP to "{pilot}, tour {lap} en {time}",
+                Callout.ARM to "C'est parti",
+                Callout.STOPPED to "   ", // blank: the built-in text is used
+            ),
+        )
+        val lap = com.gfpv.lapwing.race.calloutFor(AnnouncerType.LAP_TIME, custom, "Ace", laps, laps[2])
+        assertEquals("Ace, tour 2 en 11,00", lap)
+        // no pilot name: no stray comma or space left at the start
+        assertEquals("tour 2 en 11,00", com.gfpv.lapwing.race.calloutFor(AnnouncerType.LAP_TIME, custom, "", laps, laps[2]))
+        assertEquals("C'est parti", custom.arm)
+        assertEquals("Course arrêtée", custom.stopped)
+        // callouts not customized keep the built-in text
+        assertEquals("2 tours 21,00", com.gfpv.lapwing.race.calloutFor(AnnouncerType.TWO_LAPS, custom, "", laps, laps[2]))
     }
 
     @Test

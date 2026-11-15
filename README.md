@@ -171,6 +171,8 @@ To configure the timer open the `Settings` tab. Below you can find all the confi
 **Voice language** - callouts are in French by default, English can be chosen instead. This is stored on the phone and applies immediately. If the phone has no voice for the chosen language, the app tells you to install it in Android settings › Text-to-speech output.
 **Voice speed** - controls the speed of the announcer reading the lap time. `Test voice` lets you try it.
 
+**Callouts** - every spoken text can be rewritten, for each voice language: the start (`Armez votre quad`, `Départ au bip...`), the first pass, the lap time, the consecutive laps and `Course arrêtée`. In race callouts `{pilot}`, `{lap}`, `{count}` and `{time}` are replaced by the pilot name, the lap number, the number of laps and the time, e.g. `{pilot}, tour {lap} en {time}`. ▶ plays a callout, an empty field uses the built-in text, and a button restores all of them. These texts are stored on the phone.
+
 Callouts use the phone's media volume, and keep working with the screen off or another app in front.
 
 Changes are sent to the timer automatically, there is nothing to save. The `Timer` section at the bottom shows the timer's chip and firmware version and hosts the [firmware update](#updating-over-bluetooth).
@@ -203,7 +205,7 @@ When flying with other pilots the RSSI readings might be lower due to all the no
 The `Race` tab lets you start or stop a race and view and clear your lap times. The screen stays on while it is open.
 
 Functions of the buttons:
-- `Start` - starts the countdown: the app says "Armez votre drone", then "Départ au bip dans moins de cinq secondes" (in English: "Arm your quad", "Starting on the tone in less than five"), waits a random 1 to 5 seconds and plays the start tone, at which point the timer starts counting laps.
+- `Start` - starts the countdown: the app says "Armez votre quad", then "Départ au bip dans moins de cinq secondes" (in English: "Arm your quad", "Starting on the tone in less than five"), waits a random 1 to 5 seconds and plays the start tone, at which point the timer starts counting laps.
 - `Stop` - press it when you want to stop counting new laps. It does not clear the laps collected so far.
 - `Clear` - clears the laps on the screen, can be done when the race is running as well.
 
