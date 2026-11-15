@@ -1,44 +1,32 @@
-![PhobosLT](assets/wq.png)![Logo](assets/logo.png)
+<p align="center"><img src="assets/logo.svg" alt="GFPV Bluetooth Timer" width="548"></p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Join us on Discord!](https://img.shields.io/discord/1180943146696319126)](https://discord.gg/D3MgfvsnAw)
-# Support PhobosLT
-**Affordable FPV single node Race Timing solution**
+<p align="center"><b>Affordable single node FPV lap timer, driven from your Android phone over Bluetooth</b></p>
 
-If you like this project you can support it by contributing to the codebase, testing and giving feedback, sharing new ideas and helping spread the PhobosLT gospel. You can also consider buying me a bubble tea or a beer, it will fuel me to make the project better!
-
-[![Donate to PhobosLT](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/phoboslt)
+<p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
 
 # About
 
-Phobos LapTimer (or PhobosLT) is a simple but mighty lap timing solution for 5.8GHz FPV pilots. It is designed for personal use and with small drones in mind (2 inch or less), but there is nothing against running it with bigger drones! It is a small standalone device that is self powered and communicates over Bluetooth Low Energy with an Android phone. The goal of the project is to have a simple to use and small device that can be used anywhere whenever you want to do a whoop race practice session in your living room or at a local training venue with friends with no fuss.
-Parts of the code are based on [RotorHazard](https://github.com/RotorHazard/RotorHazard) and [ExpressLRS](https://github.com/ExpressLRS/ExpressLRS). Big kudos to people behind these organizations, they are doing A LOT for the community and are shaping the future of FPV. If you don't know these projects yet and have some time, do check them out!
+GFPV Bluetooth Timer is a simple lap timing solution for 5.8GHz FPV pilots. It is designed for personal use and with small drones in mind (2 inch or less), but there is nothing against running it with bigger drones! The timer is a small, self powered ESP32 + RX5808 device that talks over Bluetooth Low Energy to the GFPV Bluetooth Timer Android app. The goal is a device that is easy to build and use anywhere, for a whoop race practice session in your living room or at a local training venue with friends, with no fuss.
+
+It is based on [PhobosLT](https://github.com/phobos-/PhobosLT), the original idea and timing firmware, with WiFi and the web interface replaced by Bluetooth and a native Android app. See [Credits](#credits).
 
 ### Features
 
-PhobosLT has the following features:
 - Single node timing of 5.8GHz Analog, HDZero, Walksnail systems.
-- Voice callouts, optionally including pilot name.
+- Native Android app, connected over Bluetooth Low Energy.
+- Voice callouts in French or English, optionally including the pilot name, that keep working with the screen off.
 - Real time RSSI readout and calibration - allows for timing even in small spaces like a 16m^2 or 200 ft^2 room.
-- 2 lap consecutive and 3 lap consecutive times and optional readouts on the fly (specially developed for [RaceGOW](https://www.racegow.com/)).
-- Viewable lap history.
-- Ability to set a minimal measurable lap time to avoid false positives.
+- 2 and 3 consecutive lap times, with optional callouts on the fly (handy for [RaceGOW](https://www.racegow.com/)).
+- Race history saved on the phone, with best lap, average, best 3 consecutive laps and consistency.
+- Minimum lap time to avoid false positives.
 - Configurable low voltage alarm.
-- Small size, easy to build.
-- Relatively cheap.
-- Native Android app: callouts keep working with the screen off, and every race is saved on the phone with best lap, average and consistency stats.
 - Firmware updates over Bluetooth from the app.
 - Open [BLE protocol](docs/BLE_PROTOCOL.md), so other clients can be written.
-
-Future development plans:
-- iOS app.
-- Custom hardware to minimize soldering.
-- Integration with ExpressLRS and goggle VRXs to forward lap times to the OSD.
-- Integration with RotorHazard to measure split times.
-- Supporting multiple pilots at the same time at a cost of lower accuracy.
+- Small size, easy to build, relatively cheap.
 
 ### How it works
 
-The core of the project is an ESP32 board + an RX5808 module. The ESP32 is a Bluetooth Low Energy (BLE) peripheral, and the PhobosLT Android app connects to it to configure the timer and measure lap times.
+The core of the project is an ESP32 board + an RX5808 module. The ESP32 is a Bluetooth Low Energy (BLE) peripheral, and the GFPV Bluetooth Timer Android app connects to it to configure the timer and measure lap times.
 
 The lap timing happens by measuring the RSSI over time, filtering it and checking for peaks in the RSSI as the closer the drone is to the timer the higher the RSSI. Based on that we set up an `Enter RSSI` and `Exit RSSI` thresholds, that tell us when to cut a peak. The time between the enter and exit RSSI is then used to measure the time between the last peak and the current peak which is a lap.
 
@@ -50,7 +38,7 @@ The phone emits the start tone and calls out lap times with Android's text-to-sp
 
 ### Hardware
 
-To build a Phobos LapTimer you will need:
+To build a timer you will need:
 - An ESP32 breakout board, preferably with USB. The codebase is plug and play with `LilyGo T-ENERGY` which has a built in 1s 18650 Li-Ion cell slot and voltage sensing circuit out of the box. Supported boards:
     - LilyGo T-ENERGY - recommended.
     - LilyGo T-CELL - more expensive than the one above but has a charging circuit.
@@ -81,8 +69,6 @@ You can find a connection diagram of the peripherals below. **For T-Energy and T
 
 ![Connection](assets/connection_diagram.png)
 
-Alternatively you can ask the community to build a timer for you. Ask around on discord!
-
 #### 3D printed cases
 [ESP-WROOM-32 case by porlock](https://makerworld.com/en/models/400720)
 
@@ -105,22 +91,22 @@ The last step before you can build the firmware is to clone this repository to y
 - In VSCode open the command palette (using `Cmd+Shift+P` on MacOS or `Ctrl+Shift+P` on Windows)
 - Enter `Git: Clone`.
 - Click it.
-- Then, enter PhobosLT repo URL (can be found on top of the github page under the `Clone` button).
+- Then, enter this repository URL: `https://github.com/arnaudmorin/fpv-android-ble-timer.git`.
 - Choose a folder where you want your copy of the repository to be located.
 
 #### Building
 
-To build the firmware, click the `PlatformIO` icon in the toolbar on the left, which will show the list of tasks. Now, select `Project Tasks`, expand `PhobosLT` -> `General` and select `Build`. You should see the result in the terminal after a few seconds (`Success`).
+To build the firmware, click the `PlatformIO` icon in the toolbar on the left, which will show the list of tasks. Now, select `Project Tasks`, expand your target (`ESP32`, `ESP32C3` or `ESP32S3`) -> `General` and select `Build`. You should see the result in the terminal after a few seconds (`Success`).
 
 #### Flashing
 
-Before attempting to flash ensure there is a connection between the ESP32 and the computer via USB. Click the `PlatformIO` icon in the toolbar on the left, which will show the list of tasks. Now, select `Project Tasks`, expand your target (e.g. `PhobosLT`, `ESP32C3`, `ESP32S3`) -> `General` and select `Upload`. You should see the result in the terminal (`Success`). That's it! Your timer is ready to use.
+Before attempting to flash ensure there is a connection between the ESP32 and the computer via USB. Click the `PlatformIO` icon in the toolbar on the left, which will show the list of tasks. Now, select `Project Tasks`, expand your target (`ESP32`, `ESP32C3` or `ESP32S3`) -> `General` and select `Upload`. You should see the result in the terminal (`Success`). That's it! Your timer is ready to use.
 
-From the command line, the same is `pio run -e PhobosLT -t upload`.
+From the command line, the same is `pio run -e ESP32 -t upload` (or `-e ESP32C3` / `-e ESP32S3`).
 
-If something went wrong - please check the Terminal, too. It will contain at least a hint of what the issue is. Please ask the community for further help on discord!
+If something went wrong - please check the Terminal, too. It will contain at least a hint of what the issue is.
 
-**Upgrading from a WiFi version:** the first Bluetooth firmware has to be flashed over USB. The stored settings are reset once to defaults, because the WiFi fields were removed from them. There is no file system image to upload anymore.
+**Upgrading a timer running the original WiFi PhobosLT firmware:** the first Bluetooth firmware has to be flashed over USB. The stored settings are reset once to defaults, because the WiFi fields were removed from them. There is no file system image to upload anymore.
 
 #### Updating over Bluetooth
 
@@ -147,9 +133,9 @@ This section describes the usage and configuration of the timer with the Android
 ### First connect
 
 1. Turn on the timer, you should hear a short and a long beep.
-2. Open the PhobosLT app and grant Bluetooth access when asked (on Android 11 and older Android calls it location access, and location services must be on to scan). Allow notifications too: they show the connection status while racing.
-3. The app scans for timers. Tap the one named `PhobosLT_xxxx`. The timer beeps when a phone connects.
-4. Voila! Next time, `Reconnect to PhobosLT_xxxx` connects in one tap.
+2. Open the GFPV Bluetooth Timer app and grant Bluetooth access when asked (on Android 11 and older Android calls it location access, and location services must be on to scan). Allow notifications too: they show the connection status while racing.
+3. The app scans for timers. Tap the one named `GFPV_xxxx`. The timer beeps when a phone connects.
+4. Voila! Next time, `Reconnect to GFPV_xxxx` connects in one tap.
 
 If the timer goes out of range or reboots, the app reconnects on its own as soon as it is back. Up to 3 phones can be connected at the same time, e.g. a spotter can follow the laps too.
 
@@ -167,8 +153,9 @@ To configure the timer open the `Settings` tab. Below you can find all the confi
 - `2 consecutive laps` will announce the two consecutive lap time.
 - `3 consecutive laps` will announce the three consecutive lap time.
 
+**Voice language** - callouts are in French by default, English can be chosen instead. This is stored on the phone and applies immediately. If the phone has no voice for the chosen language, the app tells you to install it in Android settings › Text-to-speech output.
 **Voice speed** - controls the speed of the announcer reading the lap time. `Test voice` lets you try it.
-**Pilot name** - when filled it will include pilot name when reading the times, e.g. `Pilot1 Lap 3, 23.45`. It is useful when there is more than just one timer running at the same time. When practicing alone leave it empty.
+**Pilot name** - when filled it will include pilot name when reading the times, e.g. `Pilot1 Tour 3, 23,45` (in English `Pilot1 Lap 3, 23.45`). It is useful when there is more than just one timer running at the same time. When practicing alone leave it empty.
 
 Callouts use the phone's media volume, and keep working with the screen off or another app in front.
 
@@ -182,7 +169,7 @@ To perform the calibration open the `Calibrate` tab. You should be presented wit
 
 A node can be either `Crossing` or `Clear`. If a node is `Clear`, the timer believes a drone is not near the timer because the RSSI is low. If it is `Crossing`, the timer believes a drone is passing by the timer because the RSSI is high. A lap pass will be recorded once the `Crossing` is finished and the RSSI returns to `Clear` zone. We calibrate that by setting `Enter` and `Exit` RSSI thresholds.
 
-A well calibrated timer will show the lap time when we have only one crossing when drone is the closest to the timer, e.g. (screenshot from the previous web UI, the app graph uses the same colors):
+A well calibrated timer will show the lap time when we have only one crossing when drone is the closest to the timer, e.g. (screenshot from the original PhobosLT web interface, the app graph uses the same colors):
 
 ![Configuration](assets/plt3.png)
 
@@ -203,7 +190,7 @@ When flying with other pilots the RSSI readings might be lower due to all the no
 The `Race` tab lets you start or stop a race and view and clear your lap times. The screen stays on while it is open.
 
 Functions of the buttons:
-- `Start` - starts the countdown: the app says "Arm your quad", then "Starting on the tone in less than five", waits a random 1 to 5 seconds and plays the start tone, at which point the timer starts counting laps.
+- `Start` - starts the countdown: the app says "Armez votre drone", then "Départ au bip dans moins de cinq secondes" (in English: "Arm your quad", "Starting on the tone in less than five"), waits a random 1 to 5 seconds and plays the start tone, at which point the timer starts counting laps.
 - `Stop` - press it when you want to stop counting new laps. It does not clear the laps collected so far.
 - `Clear` - clears the laps on the screen, can be done when the race is running as well.
 
@@ -213,6 +200,11 @@ The first lap reported is the hole shot (`HS`), the time from the start tone to 
 
 Every race with at least one lap is saved on the phone. The `History` tab lists them with their date, pilot, number of laps and best lap. Tap a race to see all its laps, the hole shot, and its consistency (standard deviation of the lap times: lower is more consistent). Races can be shared as text or deleted.
 
-# Community
+# Credits
 
-Join our [Discord](https://discord.gg/D3MgfvsnAw) channel for support and questions or just to hang out! Everyone is welcome!
+- [PhobosLT](https://github.com/phobos-/PhobosLT) by Paweł Stefański - the original idea, hardware design and lap timing firmware this project is built on.
+- Parts of the timing code are based on [RotorHazard](https://github.com/RotorHazard/RotorHazard) and [ExpressLRS](https://github.com/ExpressLRS/ExpressLRS). Big kudos to the people behind these projects, they are doing A LOT for the FPV community.
+
+# License
+
+MIT, see [LICENSE](LICENSE). The original PhobosLT copyright notice is kept as required by the license.

@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "PhobosLT"
+rootProject.name = "gfpv-bletimer"
 include(":app")

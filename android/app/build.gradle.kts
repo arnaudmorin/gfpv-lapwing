@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.phoboslt"
+    namespace = "com.gfpv.bletimer"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.phoboslt"
+        applicationId = "com.gfpv.bletimer"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
