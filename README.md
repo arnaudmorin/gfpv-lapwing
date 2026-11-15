@@ -183,9 +183,9 @@ To perform the calibration open the `Calibrate` tab. You should be presented wit
 
 A node can be either `Crossing` or `Clear`. If a node is `Clear`, the timer believes a drone is not near the timer because the RSSI is low. If it is `Crossing`, the timer believes a drone is passing by the timer because the RSSI is high. A lap pass will be recorded once the `Crossing` is finished and the RSSI returns to `Clear` zone. We calibrate that by setting `Enter` and `Exit` RSSI thresholds.
 
-A well calibrated timer will show the lap time when we have only one crossing when drone is the closest to the timer, e.g. (screenshot from the original PhobosLT web interface, the app graph uses the same colors):
+A well calibrated timer will show the lap time when we have only one crossing when drone is the closest to the timer: a single green band each time the drone passes the timer.
 
-![Configuration](assets/plt3.png)
+<p align="center"><img src="assets/calibration.png" alt="Calibrate tab with the RSSI graph, the enter and exit lines and their sliders" width="300"></p>
 
 `Crossing` will always be marked in green, the RSSI is drawn in blue, and the `Enter` and `Exit` thresholds are the red and orange lines. Set the thresholds by dragging the red and orange lines with a finger, or with the two sliders below the graph. Changes are saved to the timer automatically.
 
