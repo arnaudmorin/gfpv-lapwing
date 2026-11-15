@@ -110,7 +110,7 @@ If something went wrong - please check the Terminal, too. It will contain at lea
 
 #### Updating over Bluetooth
 
-Once a Bluetooth firmware is installed, later updates can be done from the app without a cable: open `Settings`, scroll to `Firmware update`, choose the new `firmware.bin` (found in `.pio/build/<target>/firmware.bin` after a build) and tap `Update timer`. The app refuses images built for another chip, and the timer checks the image's MD5 and validity before switching to it, so an interrupted or corrupt transfer leaves the current firmware running. The timer reboots when done and the app reconnects by itself. Use `firmware.bin`, not a merged/factory image.
+Once a Bluetooth firmware is installed, later updates can be done from the app without a cable: open `Settings`, scroll to `Firmware update`, choose the new firmware file (a `GFPV-Timer-firmware-<chip>-v1.0.<n>.bin` from the [Releases](https://github.com/arnaudmorin/fpv-android-ble-timer/releases) page, or `.pio/build/<target>/firmware.bin` after a local build) and tap `Update timer`. The app refuses images built for another chip, and the timer checks the image's MD5 and validity before switching to it, so an interrupted or corrupt transfer leaves the current firmware running. The timer reboots when done and the app reconnects by itself. Use these application images, not a merged/factory image.
 
 ### Android app
 
@@ -124,7 +124,19 @@ cd android
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`./gradlew testDebugUnitTest` runs the unit tests. A release build (`./gradlew assembleRelease`) needs to be signed with your own key before it can be installed.
+`./gradlew testDebugUnitTest` runs the unit tests. `./gradlew assembleRelease` builds the signed release APK (`app/build/outputs/apk/release/app-release.apk`).
+
+### Downloads, CI and releases
+
+You don't have to build anything yourself: every push to `main` publishes a GitHub release `v1.0.<run number>` on the [Releases](https://github.com/arnaudmorin/fpv-android-ble-timer/releases) page with:
+- `GFPV-Bluetooth-Timer-v1.0.<n>.apk` - the signed Android app. Each release installs as an update of the previous one.
+- `GFPV-Timer-firmware-ESP32-v1.0.<n>.bin`, `...-ESP32C3-...` and `...-ESP32S3-...` - the firmware for each chip, to [install from the app](#updating-over-bluetooth). The app shows the timer's firmware version as `1.0.<n>`.
+
+This is done by `.github/workflows/build.yml`, which also runs the unit tests and lint. Pull requests are built and tested without a release. Local firmware builds report their version as `dev`.
+
+### Signing
+
+The release key (`android/signing/release.jks`) and its passwords (`android/signing/keystore.properties`) are committed on purpose so CI needs no secrets and every build has the same signature. The trade-off: anyone who can read this repository can sign an APK that installs as an update of the app. Since this repository is public, consider moving the key to GitHub secrets and rotating it if that matters to you.
 
 # Usage
 

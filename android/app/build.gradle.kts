@@ -1,9 +1,20 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
 }
+
+// The release key is committed in signing/ so CI and local builds share one signature.
+val signingProps = Properties().apply {
+    val file = rootProject.file("signing/keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+// CI sets VERSION_CODE to the workflow run number; every push gets a higher version.
+val buildNumber = (System.getenv("VERSION_CODE") ?: "1").toInt()
 
 android {
     namespace = "com.gfpv.bletimer"
@@ -13,14 +24,23 @@ android {
         applicationId = "com.gfpv.bletimer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = buildNumber
+        versionName = "1.0.$buildNumber"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file(signingProps.getProperty("storeFile", "signing/release.jks"))
+            storePassword = signingProps.getProperty("storePassword")
+            keyAlias = signingProps.getProperty("keyAlias")
+            keyPassword = signingProps.getProperty("keyPassword")
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

@@ -1,7 +1,9 @@
 #include <ArduinoJson.h>
 #include <stdint.h>
 
-#define FIRMWARE_VERSION "2.0.0"
+#ifndef FIRMWARE_VERSION
+#define FIRMWARE_VERSION "dev"  // CI passes -DFIRMWARE_VERSION=\"1.0.<run>\"
+#endif
 
 /*
 ## Pinout ##

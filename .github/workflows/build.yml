@@ -1,0 +1,104 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # Every run gets a higher number: APK versionCode, and the version shown for the firmware.
+  VERSION_CODE: ${{ github.run_number }}
+
+jobs:
+  firmware:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [ESP32, ESP32C3, ESP32S3]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: platformio-${{ matrix.target }}-${{ hashFiles('platformio.ini', 'targets/*.ini') }}
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build firmware
+        env:
+          PLATFORMIO_BUILD_FLAGS: -DFIRMWARE_VERSION=\"1.0.${{ github.run_number }}\"
+        run: pio run -e ${{ matrix.target }}
+
+      - name: Rename firmware
+        run: |
+          BIN="GFPV-Timer-firmware-${{ matrix.target }}-v1.0.${VERSION_CODE}.bin"
+          cp .pio/build/${{ matrix.target }}/firmware.bin "$BIN"
+          echo "BIN=$BIN" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BIN }}
+          path: ${{ env.BIN }}
+
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Test, lint and build signed release APK
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleRelease
+
+      - name: Rename APK
+        run: |
+          APK="GFPV-Bluetooth-Timer-v1.0.${VERSION_CODE}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "../$APK"
+          echo "APK=$APK" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK }}
+          path: ${{ env.APK }}
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [firmware, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.0.${VERSION_CODE}" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "v1.0.${VERSION_CODE}" \
+            --target "$GITHUB_SHA" \
+            --generate-notes
