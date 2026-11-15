@@ -17,11 +17,11 @@ val signingProps = Properties().apply {
 val buildNumber = (System.getenv("VERSION_CODE") ?: "1").toInt()
 
 android {
-    namespace = "com.gfpv.bletimer"
+    namespace = "com.gfpv.lapwing"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.gfpv.bletimer"
+        applicationId = "com.gfpv.lapwing"
         minSdk = 26
         targetSdk = 35
         versionCode = buildNumber

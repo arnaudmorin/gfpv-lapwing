@@ -1,12 +1,13 @@
-package com.gfpv.bletimer
+package com.gfpv.lapwing
 
-import com.gfpv.bletimer.ble.AnnouncerType
-import com.gfpv.bletimer.ble.FirmwareImage
-import com.gfpv.bletimer.ble.Frequencies
-import com.gfpv.bletimer.ble.LapEvent
-import com.gfpv.bletimer.ble.OtaCommand
-import com.gfpv.bletimer.ble.TimerConfig
-import com.gfpv.bletimer.ble.TimerStatus
+import com.gfpv.lapwing.ble.AnnouncerType
+import com.gfpv.lapwing.ble.FirmwareImage
+import com.gfpv.lapwing.ble.Frequencies
+import com.gfpv.lapwing.ble.LapEvent
+import com.gfpv.lapwing.ble.OtaCommand
+import com.gfpv.lapwing.ble.TimerConfig
+import com.gfpv.lapwing.ble.TimerStatus
+import com.gfpv.lapwing.ble.compareVersions
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -88,5 +89,24 @@ class ProtocolTest {
         assertEquals(0, FirmwareImage.expectedChipId("ESP32-PICO-D4"))
         assertEquals(5, FirmwareImage.expectedChipId("ESP32-C3"))
         assertEquals(9, FirmwareImage.expectedChipId("ESP32-S3"))
+    }
+
+    @Test
+    fun sharedFrequencyKeepsThePickedBand() {
+        // 5880 MHz is both F8 and R7
+        assertEquals(3 to 7, Frequencies.find(5880))
+        assertEquals(4 to 6, Frequencies.find(5880, preferBand = 4))
+        assertEquals("R7 · 5880 MHz", Frequencies.label(5880, preferBand = 4))
+        // a band that does not have the frequency is ignored
+        assertEquals(0 to 0, Frequencies.find(5865, preferBand = 4))
+    }
+
+    @Test
+    fun versionOrder() {
+        assertEquals(1, compareVersions("1.0.42", "1.0.9"))
+        assertEquals(-1, compareVersions("1.0.9", "1.1"))
+        assertEquals(0, compareVersions("1.0", "1.0.0"))
+        assertNull(compareVersions("1.0.42", "dev"))
+        assertNull(compareVersions("", "1.0.1"))
     }
 }

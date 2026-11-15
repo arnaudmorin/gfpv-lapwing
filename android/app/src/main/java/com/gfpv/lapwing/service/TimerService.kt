@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.service
+package com.gfpv.lapwing.service
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -11,11 +11,11 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.gfpv.bletimer.PhobosApplication
-import com.gfpv.bletimer.R
-import com.gfpv.bletimer.ble.ConnectionState
-import com.gfpv.bletimer.race.formatSeconds
-import com.gfpv.bletimer.ui.MainActivity
+import com.gfpv.lapwing.LapwingApplication
+import com.gfpv.lapwing.R
+import com.gfpv.lapwing.ble.ConnectionState
+import com.gfpv.lapwing.race.formatSeconds
+import com.gfpv.lapwing.ui.MainActivity
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
@@ -33,7 +33,7 @@ class TimerService : LifecycleService() {
 
         if (observing) return START_NOT_STICKY
         observing = true
-        val container = (application as PhobosApplication).container
+        val container = (application as LapwingApplication).container
         lifecycleScope.launch {
             combine(container.connection.state, container.race.state) { conn, race -> conn to race }.collect { (conn, race) ->
                 val text = when (conn) {
@@ -58,7 +58,7 @@ class TimerService : LifecycleService() {
             this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE,
         )
-        return NotificationCompat.Builder(this, PhobosApplication.NOTIFICATION_CHANNEL)
+        return NotificationCompat.Builder(this, LapwingApplication.NOTIFICATION_CHANNEL)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(text)

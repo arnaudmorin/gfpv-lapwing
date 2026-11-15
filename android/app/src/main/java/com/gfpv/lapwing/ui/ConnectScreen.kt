@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.ui
+package com.gfpv.lapwing.ui
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -44,7 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.gfpv.bletimer.ble.ConnectionState
+import com.gfpv.lapwing.ble.ConnectionState
 
 private fun blePermissions(): List<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
     listOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
@@ -98,7 +98,7 @@ fun ConnectScreen(vm: MainViewModel, state: ConnectionState) {
         Text("Connect to your timer", style = MaterialTheme.typography.headlineSmall)
         when {
             !granted -> {
-                Text("GFPV Bluetooth Timer needs Bluetooth access to find and talk to the timer.")
+                Text("GFPV Lapwing needs Bluetooth access to find and talk to the timer.")
                 Button(onClick = { permissionLauncher.launch(requestedPermissions()) }) { Text("Grant Bluetooth access") }
                 return@Column
             }

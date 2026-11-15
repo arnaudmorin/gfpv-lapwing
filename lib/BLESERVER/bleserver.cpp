@@ -5,7 +5,7 @@
 
 #include "debug.h"
 
-static const char *ble_name_prefix = "GFPV";
+static const char *ble_name_prefix = "Lapwing";
 
 static void putUint16(uint8_t *buf, uint16_t v) {
     buf[0] = v & 0xFF;
@@ -27,7 +27,7 @@ void BleServer::init(Config *config, LapTimer *lapTimer, BatteryMonitor *batMoni
     buz = buzzer;
     led = l;
 
-    // Device name ends with the last 2 bytes of the BT MAC, e.g. GFPV_A1B2
+    // Device name ends with the last 2 bytes of the BT MAC, e.g. Lapwing_A1B2
     uint8_t mac[6];
     esp_read_mac(mac, ESP_MAC_BT);
     char name[20];

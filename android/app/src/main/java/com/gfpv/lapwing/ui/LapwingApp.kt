@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.ui
+package com.gfpv.lapwing.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,12 +8,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,20 +42,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.gfpv.bletimer.R
-import com.gfpv.bletimer.ble.ConnectionState
+import com.gfpv.lapwing.R
+import com.gfpv.lapwing.ble.ConnectionState
 import java.util.Locale
 
 enum class Tab(val label: String, val icon: ImageVector) {
     RACE("Race", Icons.Filled.Timer),
     CALIBRATE("Calibrate", Icons.Filled.GraphicEq),
     SETTINGS("Settings", Icons.Filled.Tune),
-    HISTORY("History", Icons.Filled.History),
+    STATS("Stats", Icons.Filled.BarChart),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PhobosApp(vm: MainViewModel) {
+fun LapwingApp(vm: MainViewModel) {
     var tab by rememberSaveable { mutableStateOf(Tab.RACE) }
     val conn by vm.connection.state.collectAsStateWithLifecycle()
     val status by vm.connection.status.collectAsStateWithLifecycle()
@@ -65,6 +67,27 @@ fun PhobosApp(vm: MainViewModel) {
             snackbar.showSnackbar(it)
             vm.messageShown()
         }
+    }
+
+    val firmwarePrompt by vm.firmwarePrompt.collectAsStateWithLifecycle()
+    firmwarePrompt?.let { offer ->
+        AlertDialog(
+            onDismissRequest = { vm.dismissFirmwarePrompt(offer) },
+            title = { Text("Timer firmware update") },
+            text = {
+                Text(
+                    "This app includes firmware ${offer.version} for your ${offer.image.chipName} timer, " +
+                        "which runs ${offer.current}. Keep the phone close to the timer until the update finishes.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.flashFirmware(offer.image)
+                    tab = Tab.SETTINGS // the progress is shown there
+                }) { Text("Update") }
+            },
+            dismissButton = { TextButton(onClick = { vm.dismissFirmwarePrompt(offer) }) { Text("Later") } },
+        )
     }
 
     Scaffold(
@@ -102,7 +125,7 @@ fun PhobosApp(vm: MainViewModel) {
         Box(Modifier.padding(padding).fillMaxSize()) {
             val c = conn
             when {
-                tab == Tab.HISTORY -> HistoryScreen(vm)
+                tab == Tab.STATS -> StatsScreen(vm)
                 c is ConnectionState.Disconnected || c is ConnectionState.Connecting -> ConnectScreen(vm, c)
                 tab == Tab.RACE -> RaceScreen(vm, reconnecting = c is ConnectionState.Reconnecting)
                 c is ConnectionState.Reconnecting -> Waiting("Waiting for ${c.name} to come back in range…")

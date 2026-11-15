@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "gfpv-bletimer"
+rootProject.name = "gfpv-lapwing"
 include(":app")

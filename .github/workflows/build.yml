@@ -45,7 +45,7 @@ jobs:
 
       - name: Rename firmware
         run: |
-          BIN="GFPV-Timer-firmware-${{ matrix.target }}-v1.0.${VERSION_CODE}.bin"
+          BIN="GFPV-Lapwing-firmware-${{ matrix.target }}-v1.0.${VERSION_CODE}.bin"
           cp .pio/build/${{ matrix.target }}/firmware.bin "$BIN"
           echo "BIN=$BIN" >> "$GITHUB_ENV"
 
@@ -55,12 +55,30 @@ jobs:
           path: ${{ env.BIN }}
 
   android:
+    # The APK bundles the firmware built in this same run, so the app can offer it on connect.
+    needs: [firmware]
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: android
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: GFPV-Lapwing-firmware-*
+          path: firmware-bins
+          merge-multiple: true
+
+      - name: Bundle firmware in the APK
+        run: |
+          DIR=app/src/main/assets/firmware
+          mkdir -p "$DIR"
+          for T in ESP32 ESP32C3 ESP32S3; do
+            cp "../firmware-bins/GFPV-Lapwing-firmware-${T}-v1.0.${VERSION_CODE}.bin" "$DIR/${T}.bin"
+          done
+          echo "1.0.${VERSION_CODE}" > "$DIR/version.txt"
+          ls -l "$DIR"
 
       - uses: actions/setup-java@v4
         with:
@@ -74,7 +92,7 @@ jobs:
 
       - name: Rename APK
         run: |
-          APK="GFPV-Bluetooth-Timer-v1.0.${VERSION_CODE}.apk"
+          APK="GFPV-Lapwing-v1.0.${VERSION_CODE}.apk"
           cp app/build/outputs/apk/release/app-release.apk "../$APK"
           echo "APK=$APK" >> "$GITHUB_ENV"
 

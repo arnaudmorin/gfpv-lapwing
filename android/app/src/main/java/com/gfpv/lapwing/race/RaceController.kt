@@ -1,14 +1,14 @@
-package com.gfpv.bletimer.race
+package com.gfpv.lapwing.race
 
 import android.os.SystemClock
 import android.util.Log
-import com.gfpv.bletimer.audio.Announcer
-import com.gfpv.bletimer.ble.AnnouncerType
-import com.gfpv.bletimer.ble.TimerConfig
-import com.gfpv.bletimer.ble.TimerConnection
-import com.gfpv.bletimer.data.LapEntity
-import com.gfpv.bletimer.data.RaceDao
-import com.gfpv.bletimer.data.RaceEntity
+import com.gfpv.lapwing.audio.Announcer
+import com.gfpv.lapwing.ble.AnnouncerType
+import com.gfpv.lapwing.ble.TimerConfig
+import com.gfpv.lapwing.ble.TimerConnection
+import com.gfpv.lapwing.data.LapEntity
+import com.gfpv.lapwing.data.RaceDao
+import com.gfpv.lapwing.data.RaceEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

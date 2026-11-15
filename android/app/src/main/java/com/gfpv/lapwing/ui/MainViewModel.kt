@@ -1,24 +1,37 @@
-package com.gfpv.bletimer.ui
+package com.gfpv.lapwing.ui
 
 import android.app.Application
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.gfpv.bletimer.PhobosApplication
-import com.gfpv.bletimer.audio.VoiceLanguage
-import com.gfpv.bletimer.ble.FirmwareImage
-import com.gfpv.bletimer.ble.FoundTimer
-import com.gfpv.bletimer.ble.TimerConfig
-import com.gfpv.bletimer.ble.scanTimers
-import com.gfpv.bletimer.race.RacePhase
-import com.gfpv.bletimer.service.TimerService
+import com.gfpv.lapwing.LapwingApplication
+import com.gfpv.lapwing.audio.VoiceLanguage
+import com.gfpv.lapwing.ble.BundledFirmware
+import com.gfpv.lapwing.ble.DeviceInfo
+import com.gfpv.lapwing.ble.FirmwareImage
+import com.gfpv.lapwing.ble.FoundTimer
+import com.gfpv.lapwing.ble.TimerConfig
+import com.gfpv.lapwing.ble.compareVersions
+import com.gfpv.lapwing.ble.scanTimers
+import com.gfpv.lapwing.race.RacePhase
+import com.gfpv.lapwing.service.TimerService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,9 +46,13 @@ sealed interface OtaState {
     data class Failed(val message: String) : OtaState
 }
 
+/** Firmware bundled in the APK that the connected timer could install. [newer] is false for a "dev" timer. */
+data class FirmwareOffer(val image: FirmwareImage, val version: String, val current: String, val newer: Boolean)
+
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class MainViewModel(app: Application) : AndroidViewModel(app) {
-    private val container = (app as PhobosApplication).container
-    private val prefs = app.getSharedPreferences("bletimer", Context.MODE_PRIVATE)
+    private val container = (app as LapwingApplication).container
+    private val prefs = app.getSharedPreferences("lapwing", Context.MODE_PRIVATE)
 
     val connection = container.connection
     val race = container.race
@@ -103,15 +120,53 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- configuration ----
 
-    fun saveConfig(config: TimerConfig) {
-        container.scope.launch {
-            _messages.value = try {
-                connection.writeConfig(config)
-                "Configuration saved"
-            } catch (e: Exception) {
-                "Could not save: ${e.message}"
+    /**
+     * The configuration the screens show and edit: the timer's, plus any edit not written yet.
+     * Compose state rather than a flow so text fields bound to it update synchronously.
+     */
+    var config: TimerConfig? by mutableStateOf(connection.config.value)
+        private set
+
+    /** True while an edit has not reached the timer yet: the timer's older value must not overwrite it. */
+    private var editPending = false
+    private val configEdits = MutableSharedFlow<TimerConfig>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    init {
+        viewModelScope.launch {
+            connection.config.collect { if (!editPending) config = it }
+        }
+        // Saved automatically once edits pause, so dragging a slider or typing is one write, not dozens.
+        viewModelScope.launch {
+            configEdits.debounce(CONFIG_SAVE_DELAY_MS).collect { edit ->
+                try {
+                    connection.writeConfig(edit)
+                    if (config == edit) editPending = false
+                } catch (e: Exception) {
+                    editPending = false
+                    config = connection.config.value
+                    _messages.value = "Could not save: ${e.message}"
+                }
             }
         }
+    }
+
+    fun updateConfig(edit: TimerConfig) {
+        if (edit == config) return
+        editPending = true
+        config = edit
+        configEdits.tryEmit(edit)
+    }
+
+    /**
+     * Band picked in the channel selector, remembered on the phone. Needed because some
+     * frequencies are in two bands (R7 and F8 are both 5880 MHz) and the timer only stores the frequency.
+     */
+    private val _preferredBand = MutableStateFlow(prefs.getInt("band", -1).takeIf { it >= 0 })
+    val preferredBand: StateFlow<Int?> = _preferredBand.asStateFlow()
+
+    fun setPreferredBand(band: Int) {
+        _preferredBand.value = band
+        prefs.edit().putInt("band", band).apply()
     }
 
     fun testVoice(config: TimerConfig) {
@@ -194,7 +249,37 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _ota.value = OtaState.Idle
     }
 
+    /** Firmware bundled in this APK for the connected timer, when it differs from what the timer runs. */
+    val firmwareOffer: StateFlow<FirmwareOffer?> = connection.info
+        .mapLatest { info -> info?.let { findFirmwareOffer(it) } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    private suspend fun findFirmwareOffer(info: DeviceInfo): FirmwareOffer? = withContext(Dispatchers.IO) {
+        val ctx = getApplication<Application>()
+        val bundled = BundledFirmware.version(ctx) ?: return@withContext null
+        if (bundled == info.firmware) return@withContext null
+        val order = compareVersions(bundled, info.firmware)
+        if (order != null && order < 0) return@withContext null // the timer is newer than this app
+        val image = BundledFirmware.forChip(ctx, info.chip) ?: return@withContext null
+        FirmwareOffer(image, bundled, info.firmware, newer = order != null)
+    }
+
+    private val _dismissedFirmware = MutableStateFlow(prefs.getString("dismissedFirmware", null))
+
+    /** A newer bundled firmware to propose right away, unless this version was already declined. */
+    val firmwarePrompt: StateFlow<FirmwareOffer?> = combine(firmwareOffer, _dismissedFirmware, race.state, _ota) { offer, dismissed, r, ota ->
+        // Not during a race, nor during/after an update: the timer reports its new version only once it reconnects.
+        offer?.takeIf { it.newer && it.version != dismissed && r.phase == RacePhase.IDLE && ota == OtaState.Idle }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /** "Later": stop proposing this version on connect; it stays available in Settings. */
+    fun dismissFirmwarePrompt(offer: FirmwareOffer) {
+        _dismissedFirmware.value = offer.version
+        prefs.edit().putString("dismissedFirmware", offer.version).apply()
+    }
+
     companion object {
         const val RSSI_HISTORY = 300 // 30 s at 10 Hz
+        const val CONFIG_SAVE_DELAY_MS = 400L
     }
 }

@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.ui
+package com.gfpv.lapwing.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -22,12 +22,12 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.gfpv.bletimer.race.Progression
-import com.gfpv.bletimer.race.formatSeconds
+import com.gfpv.lapwing.race.Progression
+import com.gfpv.lapwing.race.formatSeconds
 
 private fun lapText(ms: Long?) = if (ms == null) "–" else "${formatSeconds(ms)} s"
 
-/** Records and progression charts at the top of the History tab (ported from fpv-android-lap-timer). */
+/** Records and progression charts at the top of the Stats tab (ported from fpv-android-lap-timer). */
 @Composable
 fun HistorySummary(progression: Progression, raceCount: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

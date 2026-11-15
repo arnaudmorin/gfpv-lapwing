@@ -1,19 +1,19 @@
-package com.gfpv.bletimer
+package com.gfpv.lapwing
 
-import com.gfpv.bletimer.audio.VoiceLanguage
-import com.gfpv.bletimer.ble.AnnouncerType
-import com.gfpv.bletimer.race.Lap
-import com.gfpv.bletimer.race.Progression
-import com.gfpv.bletimer.race.bestThreeConsecutive
-import com.gfpv.bletimer.race.RaceStats
-import com.gfpv.bletimer.race.consecutiveTime
-import com.gfpv.bletimer.race.formatClock
+import com.gfpv.lapwing.audio.VoiceLanguage
+import com.gfpv.lapwing.ble.AnnouncerType
+import com.gfpv.lapwing.race.Lap
+import com.gfpv.lapwing.race.Progression
+import com.gfpv.lapwing.race.bestThreeConsecutive
+import com.gfpv.lapwing.race.RaceStats
+import com.gfpv.lapwing.race.consecutiveTime
+import com.gfpv.lapwing.race.formatClock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
 private fun calloutFor(lang: VoiceLanguage, type: AnnouncerType, pilot: String, laps: List<Lap>, lap: Lap) =
-    com.gfpv.bletimer.race.calloutFor(type, lang, pilot, laps, lap)
+    com.gfpv.lapwing.race.calloutFor(type, lang, pilot, laps, lap)
 
 class LapMathTest {
     private val laps = listOf(Lap(0, 2_500), Lap(1, 10_000), Lap(2, 11_000), Lap(3, 9_000), Lap(4, 12_000))

@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.ui
+package com.gfpv.lapwing.ui
 
 import android.content.Intent
 import android.text.format.DateUtils
@@ -36,19 +36,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.gfpv.bletimer.ble.Frequencies
-import com.gfpv.bletimer.data.RaceWithLaps
-import com.gfpv.bletimer.race.Lap
-import com.gfpv.bletimer.race.Progression
-import com.gfpv.bletimer.race.RaceStats
-import com.gfpv.bletimer.race.consecutiveTime
-import com.gfpv.bletimer.race.formatSeconds
+import com.gfpv.lapwing.ble.Frequencies
+import com.gfpv.lapwing.data.RaceWithLaps
+import com.gfpv.lapwing.race.Lap
+import com.gfpv.lapwing.race.Progression
+import com.gfpv.lapwing.race.RaceStats
+import com.gfpv.lapwing.race.consecutiveTime
+import com.gfpv.lapwing.race.formatSeconds
 
 private fun RaceWithLaps.toLaps() = laps.map { Lap(it.lapIndex, it.timeMs) }.sortedBy { it.index }
 
 @Composable
-fun HistoryScreen(vm: MainViewModel) {
+fun StatsScreen(vm: MainViewModel) {
     val races by vm.races.collectAsStateWithLifecycle()
+    val preferredBand by vm.preferredBand.collectAsStateWithLifecycle()
     var selectedId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val selected = races.firstOrNull { it.race.id == selectedId }
@@ -80,7 +81,7 @@ fun HistoryScreen(vm: MainViewModel) {
                     Text(raceTitle(r), style = MaterialTheme.typography.titleMedium)
                     Text(
                         "${stats.lapCount} laps · best ${stats.bestMs?.let { formatSeconds(it) } ?: "–"} · " +
-                            Frequencies.label(r.race.frequency),
+                            Frequencies.label(r.race.frequency, preferredBand),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
@@ -146,7 +147,7 @@ private fun RaceDetail(vm: MainViewModel, r: RaceWithLaps, onBack: () -> Unit) {
 }
 
 private fun shareText(title: String, laps: List<Lap>, stats: RaceStats): String = buildString {
-    appendLine("GFPV Bluetooth Timer race $title")
+    appendLine("GFPV Lapwing race $title")
     stats.bestMs?.let { appendLine("Best lap ${formatSeconds(it)} s") }
     stats.bestThreeMs?.let { appendLine("Best 3 consecutive ${formatSeconds(it)} s") }
     laps.forEach { lap ->

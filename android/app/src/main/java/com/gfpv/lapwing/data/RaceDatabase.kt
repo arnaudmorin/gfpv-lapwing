@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.data
+package com.gfpv.lapwing.data
 
 import android.content.Context
 import androidx.room.Dao

@@ -2,3 +2,6 @@
 .DS_Store
 .vscode
 .idea
+
+# Firmware bundled into the APK by CI
+android/app/src/main/assets/firmware/

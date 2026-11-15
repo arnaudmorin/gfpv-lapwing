@@ -1,11 +1,11 @@
-package com.gfpv.bletimer.ble
+package com.gfpv.lapwing.ble
 
 import org.json.JSONObject
 import java.security.MessageDigest
 import java.util.UUID
 
 /** GATT layout of the timer, mirrors lib/BLESERVER/bleserver.h and docs/BLE_PROTOCOL.md. */
-object PhobosUuids {
+object LapwingUuids {
     private fun uuid(short: String) = UUID.fromString("5a3e$short-7c1f-4d8b-9a6e-2f4c1b0d9e10")
 
     val SERVICE: UUID = uuid("0001")
@@ -111,8 +111,16 @@ object Frequencies {
         listOf(5362, 5399, 5436, 5473, 5510, 5547, 5584, 5621),
     )
 
-    /** (band, channel) indices for a frequency, or null if it is not in the table. */
-    fun find(freq: Int): Pair<Int, Int>? {
+    /**
+     * (band, channel) indices for a frequency, or null if it is not in the table.
+     * A few frequencies exist in two bands (5880 MHz is both F8 and R7): [preferBand], the band
+     * the pilot picked, wins when it has the frequency, otherwise the first band in the table.
+     */
+    fun find(freq: Int, preferBand: Int? = null): Pair<Int, Int>? {
+        preferBand?.let { b ->
+            val c = table.getOrNull(b)?.indexOf(freq) ?: -1
+            if (c >= 0) return b to c
+        }
         table.forEachIndexed { b, chans ->
             val c = chans.indexOf(freq)
             if (c >= 0) return b to c
@@ -120,9 +128,9 @@ object Frequencies {
         return null
     }
 
-    fun label(freq: Int): String {
+    fun label(freq: Int, preferBand: Int? = null): String {
         if (freq == POWER_DOWN) return "RX off"
-        val bc = find(freq) ?: return "$freq MHz"
+        val bc = find(freq, preferBand) ?: return "$freq MHz"
         return "${bands[bc.first]}${bc.second + 1} · $freq MHz"
     }
 }

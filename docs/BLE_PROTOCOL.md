@@ -1,6 +1,6 @@
-# GFPV Bluetooth Timer BLE protocol
+# GFPV Lapwing BLE protocol
 
-The timer is a BLE peripheral advertising as `GFPV_XXXX` (the last two bytes of
+The timer is a BLE peripheral advertising as `Lapwing_XXXX` (the last two bytes of
 its Bluetooth MAC) with the primary service UUID below in the advertisement, so
 clients can filter scans on it. Up to 3 clients may be connected at the same time
 (e.g. the pilot's phone and a spotter's phone).

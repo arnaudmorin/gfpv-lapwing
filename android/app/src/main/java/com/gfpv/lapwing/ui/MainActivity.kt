@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.ui
+package com.gfpv.lapwing.ui
 
 import android.media.AudioManager
 import android.os.Bundle
@@ -15,8 +15,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         volumeControlStream = AudioManager.STREAM_MUSIC // volume keys control the callouts
         setContent {
-            PhobosTheme {
-                PhobosApp(vm)
+            LapwingTheme {
+                LapwingApp(vm)
             }
         }
     }

@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/logo.svg" alt="GFPV Bluetooth Timer" width="548"></p>
+<p align="center"><img src="assets/logo.svg" alt="GFPV Lapwing" width="544"></p>
 
 <p align="center"><b>Affordable single node FPV lap timer, driven from your Android phone over Bluetooth</b></p>
 
@@ -6,7 +6,7 @@
 
 # About
 
-GFPV Bluetooth Timer is a simple lap timing solution for 5.8GHz FPV pilots. It is designed for personal use and with small drones in mind (2 inch or less), but there is nothing against running it with bigger drones! The timer is a small, self powered ESP32 + RX5808 device that talks over Bluetooth Low Energy to the GFPV Bluetooth Timer Android app. The goal is a device that is easy to build and use anywhere, for a whoop race practice session in your living room or at a local training venue with friends, with no fuss.
+GFPV Lapwing is a simple lap timing solution for 5.8GHz FPV pilots. It is designed for personal use and with small drones in mind (2 inch or less), but there is nothing against running it with bigger drones! The timer is a small, self powered ESP32 + RX5808 device that talks over Bluetooth Low Energy to the GFPV Lapwing Android app. The goal is a device that is easy to build and use anywhere, for a whoop race practice session in your living room or at a local training venue with friends, with no fuss.
 
 It is based on [PhobosLT](https://github.com/phobos-/PhobosLT), the original idea and timing firmware, with WiFi and the web interface replaced by Bluetooth and a native Android app. See [Credits](#credits).
 
@@ -26,7 +26,7 @@ It is based on [PhobosLT](https://github.com/phobos-/PhobosLT), the original ide
 
 ### How it works
 
-The core of the project is an ESP32 board + an RX5808 module. The ESP32 is a Bluetooth Low Energy (BLE) peripheral, and the GFPV Bluetooth Timer Android app connects to it to configure the timer and measure lap times.
+The core of the project is an ESP32 board + an RX5808 module. The ESP32 is a Bluetooth Low Energy (BLE) peripheral, and the GFPV Lapwing Android app connects to it to configure the timer and measure lap times.
 
 The lap timing happens by measuring the RSSI over time, filtering it and checking for peaks in the RSSI as the closer the drone is to the timer the higher the RSSI. Based on that we set up an `Enter RSSI` and `Exit RSSI` thresholds, that tell us when to cut a peak. The time between the enter and exit RSSI is then used to measure the time between the last peak and the current peak which is a lap.
 
@@ -110,7 +110,9 @@ If something went wrong - please check the Terminal, too. It will contain at lea
 
 #### Updating over Bluetooth
 
-Once a Bluetooth firmware is installed, later updates can be done from the app without a cable: open `Settings`, scroll to `Firmware update`, choose the new firmware file (a `GFPV-Timer-firmware-<chip>-v1.0.<n>.bin` from the [Releases](https://github.com/arnaudmorin/fpv-android-ble-timer/releases) page, or `.pio/build/<target>/firmware.bin` after a local build) and tap `Update timer`. The app refuses images built for another chip, and the timer checks the image's MD5 and validity before switching to it, so an interrupted or corrupt transfer leaves the current firmware running. The timer reboots when done and the app reconnects by itself. Use these application images, not a merged/factory image.
+Once a Bluetooth firmware is installed, later updates can be done from the app without a cable. The release APK includes the firmware built with it: when the app connects to a timer running an older version, it proposes the update right away (`Later` hides the proposal for that version, the update stays available in `Settings` › `Firmware update`). Timers running a local build (`dev`) are not prompted, but can install the included firmware from `Settings`.
+
+To install another firmware: open `Settings`, scroll to `Firmware update`, choose the new firmware file (a `GFPV-Lapwing-firmware-<chip>-v1.0.<n>.bin` from the [Releases](https://github.com/arnaudmorin/fpv-android-ble-timer/releases) page, or `.pio/build/<target>/firmware.bin` after a local build) and tap `Update timer`. The app refuses images built for another chip, and the timer checks the image's MD5 and validity before switching to it, so an interrupted or corrupt transfer leaves the current firmware running. The timer reboots when done and the app reconnects by itself. Use these application images, not a merged/factory image.
 
 ### Android app
 
@@ -129,8 +131,8 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ### Downloads, CI and releases
 
 You don't have to build anything yourself: every push to `main` publishes a GitHub release `v1.0.<run number>` on the [Releases](https://github.com/arnaudmorin/fpv-android-ble-timer/releases) page with:
-- `GFPV-Bluetooth-Timer-v1.0.<n>.apk` - the signed Android app. Each release installs as an update of the previous one.
-- `GFPV-Timer-firmware-ESP32-v1.0.<n>.bin`, `...-ESP32C3-...` and `...-ESP32S3-...` - the firmware for each chip, to [install from the app](#updating-over-bluetooth). The app shows the timer's firmware version as `1.0.<n>`.
+- `GFPV-Lapwing-v1.0.<n>.apk` - the signed Android app, with the firmware of the same release inside. Each release installs as an update of the previous one.
+- `GFPV-Lapwing-firmware-ESP32-v1.0.<n>.bin`, `...-ESP32C3-...` and `...-ESP32S3-...` - the firmware for each chip, to [install from the app](#updating-over-bluetooth). The app shows the timer's firmware version as `1.0.<n>`.
 
 This is done by `.github/workflows/build.yml`, which also runs the unit tests and lint. Pull requests are built and tested without a release. Local firmware builds report their version as `dev`.
 
@@ -140,14 +142,14 @@ The release key (`android/signing/release.jks`) and its passwords (`android/sign
 
 # Usage
 
-This section describes the usage and configuration of the timer with the Android app. The app has 4 tabs: `Race`, `Calibrate`, `Settings` and `History`.
+This section describes the usage and configuration of the timer with the Android app. The app has 4 tabs: `Race`, `Calibrate`, `Settings` and `Stats`.
 
 ### First connect
 
 1. Turn on the timer, you should hear a short and a long beep.
-2. Open the GFPV Bluetooth Timer app and grant Bluetooth access when asked (on Android 11 and older Android calls it location access, and location services must be on to scan). Allow notifications too: they show the connection status while racing.
-3. The app scans for timers. Tap the one named `GFPV_xxxx`. The timer beeps when a phone connects.
-4. Voila! Next time, `Reconnect to GFPV_xxxx` connects in one tap.
+2. Open the GFPV Lapwing app and grant Bluetooth access when asked (on Android 11 and older Android calls it location access, and location services must be on to scan). Allow notifications too: they show the connection status while racing.
+3. The app scans for timers. Tap the one named `Lapwing_xxxx`. The timer beeps when a phone connects.
+4. Voila! Next time, `Reconnect to Lapwing_xxxx` connects in one tap.
 
 If the timer goes out of range or reboots, the app reconnects on its own as soon as it is back. Up to 3 phones can be connected at the same time, e.g. a spotter can follow the laps too.
 
@@ -155,9 +157,10 @@ If the timer goes out of range or reboots, the app reconnects on its own as soon
 
 To configure the timer open the `Settings` tab. Below you can find all the config parameters and their description:
 
+**Pilot name** - when filled it will include pilot name when reading the times, e.g. `Pilot1 Tour 3, 23,45` (in English `Pilot1 Lap 3, 23.45`). It is useful when there is more than just one timer running at the same time. When practicing alone leave it empty.
 **Band and Channel** - set to the same Band and Channel as your drone. Supported Bands - A, B, E, Fatshark, RaceBand and LowBand, 8 channel each. The frequency is displayed below. Until a channel is chosen the RX5808 stays powered down (`RX off`).
 **Minimum lap time** - you can set a minimum lap time that can be timed. This avoids false positives when you crash in the start gate, or when your track is very tight and you fly in close proximity to the timer multiple times during one lap.
-**Low battery alarm** - sets a battery voltage alarm that will trigger once the timer battery reaches the desired voltage. Set it to 0 to turn the alarm off. The current voltage is shown at the top of the app.
+**Low battery alarm** - turn it on to beep when the timer battery drops to the chosen voltage, between 3.0 and 4.0 V (3.6 V by default). The current voltage is shown at the top of the app.
 **Announcer** - you have a few options on how you want the app to report lap times:
 - `None` is no sound at all.
 - `Beep` will just emit a short beep on crossing to let you know it registered a lap.
@@ -167,17 +170,16 @@ To configure the timer open the `Settings` tab. Below you can find all the confi
 
 **Voice language** - callouts are in French by default, English can be chosen instead. This is stored on the phone and applies immediately. If the phone has no voice for the chosen language, the app tells you to install it in Android settings › Text-to-speech output.
 **Voice speed** - controls the speed of the announcer reading the lap time. `Test voice` lets you try it.
-**Pilot name** - when filled it will include pilot name when reading the times, e.g. `Pilot1 Tour 3, 23,45` (in English `Pilot1 Lap 3, 23.45`). It is useful when there is more than just one timer running at the same time. When practicing alone leave it empty.
 
 Callouts use the phone's media volume, and keep working with the screen off or another app in front.
 
-**NOTE: Once configured make sure to save the configuration by tapping `Save configuration`, otherwise the changes will not take effect.** The `Timer` section at the bottom shows the timer's chip and firmware version and hosts the [firmware update](#updating-over-bluetooth).
+Changes are sent to the timer automatically, there is nothing to save. The `Timer` section at the bottom shows the timer's chip and firmware version and hosts the [firmware update](#updating-over-bluetooth).
 
 ### Calibration
 
 Calibartion is a very important step and it needs to be done properly to ensure the timing happens correctly and every lap is counted by the timer.
 
-To perform the calibration open the `Calibrate` tab. You should be presented with two sliders and a graph representing the RSSI over time, updated 10 times per second. You can think of RSSI as an inverse of the distance between the drone and the timer. The higher the RSSI the shorter the distance.
+To perform the calibration open the `Calibrate` tab. You should be presented with a graph representing the RSSI over time, updated 10 times per second. You can think of RSSI as an inverse of the distance between the drone and the timer. The higher the RSSI the shorter the distance.
 
 A node can be either `Crossing` or `Clear`. If a node is `Clear`, the timer believes a drone is not near the timer because the RSSI is low. If it is `Crossing`, the timer believes a drone is passing by the timer because the RSSI is high. A lap pass will be recorded once the `Crossing` is finished and the RSSI returns to `Clear` zone. We calibrate that by setting `Enter` and `Exit` RSSI thresholds.
 
@@ -185,7 +187,7 @@ A well calibrated timer will show the lap time when we have only one crossing wh
 
 ![Configuration](assets/plt3.png)
 
-`Crossing` will always be marked in green, the RSSI is drawn in blue, and the `Enter` and `Exit` thresholds are the red and orange lines.
+`Crossing` will always be marked in green, the RSSI is drawn in blue, and the `Enter` and `Exit` thresholds are the red and orange lines. Set the thresholds by dragging the red and orange lines with a finger, or with the two sliders below the graph. Changes are saved to the timer automatically.
 
 
 To come up with good initial values for `Enter` and `Exit` RSSI perform these steps:
@@ -193,7 +195,6 @@ To come up with good initial values for `Enter` and `Exit` RSSI perform these st
 2. Place the drone at a distance of slightly more than one gate above the timer. 
 3. Note the RSSI, deduct 2-5 points to be safe - that should be your `Enter RSSI`. 
 4. Deduct another 8-10 points and set it as your `Exit RSSI`. 
-5. **Tap `Save RSSI thresholds` - otherwise the changes will not take effect.**
 
 When flying with other pilots the RSSI readings might be lower due to all the noise generated by other VTxs on adjecent channels. A good practice is to lower both thresholds by a few points when flying with other pilots in the air.
 
@@ -208,9 +209,9 @@ Functions of the buttons:
 
 The first lap reported is the hole shot (`HS`), the time from the start tone to the first gate crossing. Each following row shows the lap time and the 2 and 3 consecutive lap times, with the best lap highlighted, and the number of laps, best lap, average and best 3 consecutive laps are shown above the table.
 
-### History
+### Stats
 
-Every race with at least one lap is saved on the phone. The `History` tab lists them with their date, pilot, number of laps and best lap. At the top, two tiles show your all-time best lap and best 3 consecutive laps (with the three lap times), and once two races are saved a `Progression` card charts the best lap and the best 3 consecutive laps of each race over time, oldest on the left: lower is faster. Tap a race to see all its laps, the hole shot, and its consistency (standard deviation of the lap times: lower is more consistent). Races can be shared as text or deleted.
+Every race with at least one lap is saved on the phone. The `Stats` tab lists them with their date, pilot, number of laps and best lap. At the top, two tiles show your all-time best lap and best 3 consecutive laps (with the three lap times), and once two races are saved a `Progression` card charts the best lap and the best 3 consecutive laps of each race over time, oldest on the left: lower is faster. Tap a race to see all its laps, the hole shot, and its consistency (standard deviation of the lap times: lower is more consistent). Races can be shared as text or deleted.
 
 # Credits
 

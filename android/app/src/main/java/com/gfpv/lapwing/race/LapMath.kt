@@ -1,7 +1,7 @@
-package com.gfpv.bletimer.race
+package com.gfpv.lapwing.race
 
-import com.gfpv.bletimer.audio.VoiceLanguage
-import com.gfpv.bletimer.ble.AnnouncerType
+import com.gfpv.lapwing.audio.VoiceLanguage
+import com.gfpv.lapwing.ble.AnnouncerType
 import java.util.Locale
 import kotlin.math.sqrt
 
@@ -81,7 +81,7 @@ fun bestThreeConsecutive(laps: List<Lap>): Pair<Long, List<Lap>>? {
         ?.let { (total, last) -> total to (last.index - 2..last.index).map { byIndex.getValue(it) } }
 }
 
-/** All-time records and per-race series for the History charts, as in fpv-android-lap-timer's Stats screen. */
+/** All-time records and per-race series for the Stats charts, as in fpv-android-lap-timer's Stats screen. */
 data class Progression(
     /** Best lap of each race, oldest race first (null when a race has no full lap). */
     val bestLaps: List<Long?>,

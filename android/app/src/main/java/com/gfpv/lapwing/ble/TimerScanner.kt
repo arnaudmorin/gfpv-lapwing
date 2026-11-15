@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.ble
+package com.gfpv.lapwing.ble
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothManager
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.callbackFlow
 
 data class FoundTimer(val address: String, val name: String, val rssi: Int)
 
-/** Scans for timers advertising the PhobosLT service while the flow is collected. */
+/** Scans for timers advertising the Lapwing service while the flow is collected. */
 @SuppressLint("MissingPermission")
 fun scanTimers(context: Context): Flow<FoundTimer> = callbackFlow {
     val scanner = context.getSystemService(BluetoothManager::class.java).adapter?.bluetoothLeScanner
@@ -32,7 +32,7 @@ fun scanTimers(context: Context): Flow<FoundTimer> = callbackFlow {
             close(IllegalStateException("Scan failed ($errorCode)"))
         }
     }
-    val filters = listOf(ScanFilter.Builder().setServiceUuid(ParcelUuid(PhobosUuids.SERVICE)).build())
+    val filters = listOf(ScanFilter.Builder().setServiceUuid(ParcelUuid(LapwingUuids.SERVICE)).build())
     val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
     scanner.startScan(filters, settings, cb)
     awaitClose { runCatching { scanner.stopScan(cb) } }

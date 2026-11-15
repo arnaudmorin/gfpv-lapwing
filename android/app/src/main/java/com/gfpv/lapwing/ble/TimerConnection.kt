@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.ble
+package com.gfpv.lapwing.ble
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
@@ -42,7 +42,7 @@ sealed interface ConnectionState {
 class GattException(message: String) : IOException(message)
 
 /**
- * One BLE link to a PhobosLT timer.
+ * One BLE link to a Lapwing timer.
  *
  * Android's GATT client can only run one operation at a time, so every read/write/descriptor/MTU
  * operation goes through [gattOp], which holds [opLock] until the matching callback arrives.
@@ -112,17 +112,17 @@ class TimerConnection(private val context: Context, private val scope: Coroutine
 
     // ---- public operations ------------------------------------------------------------------
 
-    suspend fun startTimer() = write(PhobosUuids.CONTROL, byteArrayOf(ControlCommand.START))
+    suspend fun startTimer() = write(LapwingUuids.CONTROL, byteArrayOf(ControlCommand.START))
 
-    suspend fun stopTimer() = write(PhobosUuids.CONTROL, byteArrayOf(ControlCommand.STOP))
+    suspend fun stopTimer() = write(LapwingUuids.CONTROL, byteArrayOf(ControlCommand.STOP))
 
     suspend fun writeConfig(config: TimerConfig) {
-        write(PhobosUuids.CONFIG, config.toJson().toByteArray())
+        write(LapwingUuids.CONFIG, config.toJson().toByteArray())
         _config.value = config
     }
 
     suspend fun refreshConfig(): TimerConfig {
-        val cfg = TimerConfig.fromJson(String(read(PhobosUuids.CONFIG)))
+        val cfg = TimerConfig.fromJson(String(read(LapwingUuids.CONFIG)))
         _config.value = cfg
         return cfg
     }
@@ -130,7 +130,7 @@ class TimerConnection(private val context: Context, private val scope: Coroutine
     /** RSSI is only streamed by the timer while we are subscribed (calibration screen). */
     suspend fun setRssiStreaming(enabled: Boolean) {
         rssiStreaming = enabled
-        if (state.value is ConnectionState.Connected) setNotify(PhobosUuids.RSSI, enabled)
+        if (state.value is ConnectionState.Connected) setNotify(LapwingUuids.RSSI, enabled)
     }
 
     /**
@@ -142,7 +142,7 @@ class TimerConnection(private val context: Context, private val scope: Coroutine
         g.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)
         while (otaReplies.tryReceive().isSuccess) { /* drop stale replies */ }
 
-        write(PhobosUuids.OTA_CTRL, image.beginCommand())
+        write(LapwingUuids.OTA_CTRL, image.beginCommand())
         expectOtaReply(OtaCommand.BEGIN, 15_000)
 
         val chunkSize = minOf(mtu - 3, 512)
@@ -151,17 +151,17 @@ class TimerConnection(private val context: Context, private val scope: Coroutine
         try {
             while (offset < bytes.size) {
                 val end = minOf(offset + chunkSize, bytes.size)
-                write(PhobosUuids.OTA_DATA, bytes.copyOfRange(offset, end))
+                write(LapwingUuids.OTA_DATA, bytes.copyOfRange(offset, end))
                 otaReplies.tryReceive().getOrNull()?.let { reply ->
                     throw GattException("Update failed: ${OtaCommand.errorText(reply.getOrElse(1) { 0 }.toInt() and 0xFF)}")
                 }
                 offset = end
                 onProgress(offset.toFloat() / bytes.size)
             }
-            write(PhobosUuids.OTA_CTRL, byteArrayOf(OtaCommand.END))
+            write(LapwingUuids.OTA_CTRL, byteArrayOf(OtaCommand.END))
             expectOtaReply(OtaCommand.END, 30_000)
         } catch (e: Exception) {
-            runCatching { write(PhobosUuids.OTA_CTRL, byteArrayOf(OtaCommand.ABORT)) }
+            runCatching { write(LapwingUuids.OTA_CTRL, byteArrayOf(OtaCommand.ABORT)) }
             throw e
         } finally {
             g.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED)
@@ -185,19 +185,19 @@ class TimerConnection(private val context: Context, private val scope: Coroutine
     private suspend fun setup(g: BluetoothGatt) {
         gattOp("mtu") { g.requestMtu(517) }
         gattOp("discover") { g.discoverServices() }
-        if (g.getService(PhobosUuids.SERVICE) == null) throw GattException("Not a compatible timer")
-        setNotify(PhobosUuids.LAP, true)
-        setNotify(PhobosUuids.STATUS, true)
-        setNotify(PhobosUuids.OTA_CTRL, true)
-        if (rssiStreaming) setNotify(PhobosUuids.RSSI, true)
-        _info.value = DeviceInfo.parse(String(read(PhobosUuids.INFO)))
-        _status.value = TimerStatus.parse(read(PhobosUuids.STATUS))
+        if (g.getService(LapwingUuids.SERVICE) == null) throw GattException("Not a compatible timer")
+        setNotify(LapwingUuids.LAP, true)
+        setNotify(LapwingUuids.STATUS, true)
+        setNotify(LapwingUuids.OTA_CTRL, true)
+        if (rssiStreaming) setNotify(LapwingUuids.RSSI, true)
+        _info.value = DeviceInfo.parse(String(read(LapwingUuids.INFO)))
+        _status.value = TimerStatus.parse(read(LapwingUuids.STATUS))
         refreshConfig()
     }
 
     private fun characteristic(uuid: UUID): BluetoothGattCharacteristic {
         val g = gatt ?: throw GattException("Not connected")
-        return g.getService(PhobosUuids.SERVICE)?.getCharacteristic(uuid)
+        return g.getService(LapwingUuids.SERVICE)?.getCharacteristic(uuid)
             ?: throw GattException("Characteristic $uuid missing, is the firmware up to date?")
     }
 
@@ -227,7 +227,7 @@ class TimerConnection(private val context: Context, private val scope: Coroutine
         val c = characteristic(uuid)
         val g = gatt ?: throw GattException("Not connected")
         g.setCharacteristicNotification(c, enabled)
-        val d = c.getDescriptor(PhobosUuids.CCCD) ?: throw GattException("CCCD missing")
+        val d = c.getDescriptor(LapwingUuids.CCCD) ?: throw GattException("CCCD missing")
         val value = if (enabled) BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE else BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
         gattOp("descriptor") {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -270,10 +270,10 @@ class TimerConnection(private val context: Context, private val scope: Coroutine
 
     private fun onNotification(uuid: UUID, value: ByteArray) {
         when (uuid) {
-            PhobosUuids.LAP -> LapEvent.parse(value)?.let { _laps.tryEmit(it) }
-            PhobosUuids.RSSI -> if (value.isNotEmpty()) _rssi.tryEmit(value[0].toInt() and 0xFF)
-            PhobosUuids.STATUS -> TimerStatus.parse(value)?.let { _status.value = it }
-            PhobosUuids.OTA_CTRL -> otaReplies.trySend(value)
+            LapwingUuids.LAP -> LapEvent.parse(value)?.let { _laps.tryEmit(it) }
+            LapwingUuids.RSSI -> if (value.isNotEmpty()) _rssi.tryEmit(value[0].toInt() and 0xFF)
+            LapwingUuids.STATUS -> TimerStatus.parse(value)?.let { _status.value = it }
+            LapwingUuids.OTA_CTRL -> otaReplies.trySend(value)
         }
     }
 

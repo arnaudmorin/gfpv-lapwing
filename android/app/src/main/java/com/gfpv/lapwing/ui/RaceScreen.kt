@@ -1,4 +1,4 @@
-package com.gfpv.bletimer.ui
+package com.gfpv.lapwing.ui
 
 import android.os.SystemClock
 import androidx.compose.foundation.background
@@ -35,12 +35,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.gfpv.bletimer.race.Lap
-import com.gfpv.bletimer.race.RacePhase
-import com.gfpv.bletimer.race.RaceStats
-import com.gfpv.bletimer.race.consecutiveTime
-import com.gfpv.bletimer.race.formatClock
-import com.gfpv.bletimer.race.formatSeconds
+import com.gfpv.lapwing.race.Lap
+import com.gfpv.lapwing.race.RacePhase
+import com.gfpv.lapwing.race.RaceStats
+import com.gfpv.lapwing.race.consecutiveTime
+import com.gfpv.lapwing.race.formatClock
+import com.gfpv.lapwing.race.formatSeconds
 
 @Composable
 fun KeepScreenOn() {

@@ -1,13 +1,13 @@
-package com.gfpv.bletimer
+package com.gfpv.lapwing
 
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import com.gfpv.bletimer.audio.Announcer
-import com.gfpv.bletimer.audio.VoicePrefs
-import com.gfpv.bletimer.ble.TimerConnection
-import com.gfpv.bletimer.data.RaceDatabase
-import com.gfpv.bletimer.race.RaceController
+import com.gfpv.lapwing.audio.Announcer
+import com.gfpv.lapwing.audio.VoicePrefs
+import com.gfpv.lapwing.ble.TimerConnection
+import com.gfpv.lapwing.data.RaceDatabase
+import com.gfpv.lapwing.race.RaceController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,7 +22,7 @@ class AppContainer(app: Application) {
     val race = RaceController(scope, connection, announcer, database.raceDao())
 }
 
-class PhobosApplication : Application() {
+class LapwingApplication : Application() {
     lateinit var container: AppContainer
         private set
 
