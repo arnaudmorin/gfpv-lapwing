@@ -21,9 +21,27 @@
 
 */
 
-//ESP23-C3
-#if defined(ESP32C3)
+//LilyGo T-Energy S3 (ESP32-S3): the battery divider is hardwired to GPIO3
+// (BATTERY_ADC_DATA = IO3, see Xinyuan-LilyGO/T-Energy-S3 pin_config.h),
+// NOT GPIO1. Build with the "T-Energy-S3" env.
+#if defined(ESP32S3) && defined(LILYGO_T_ENERGY_S3)
 
+#define BOARD_NAME "T-Energy-S3"  // reported in BLE info; matches assets/firmware/<board>.bin in the app
+#define PIN_LED 2
+#define PIN_VBAT 3
+#define VBAT_SCALE 2
+#define VBAT_ADD 0           // no charge-diode drop on the S3 sense path (unlike the original T-Energy)
+#define PIN_RX5808_RSSI 13
+#define PIN_RX5808_DATA 11     //CH1
+#define PIN_RX5808_SELECT 10   //CH2
+#define PIN_RX5808_CLOCK 12    //CH3
+#define PIN_BUZZER 4           // GPIO3 is the battery sense pin on this board
+#define BUZZER_INVERTED false
+
+//ESP23-C3
+#elif defined(ESP32C3)
+
+#define BOARD_NAME "ESP32C3"
 #define PIN_LED 1
 #define PIN_VBAT 0
 #define VBAT_SCALE 2
@@ -35,9 +53,10 @@
 #define PIN_BUZZER 5
 #define BUZZER_INVERTED false
 
-//ESP32-S3
+//ESP32-S3 (generic devkit; wire your own divider, default on GPIO1)
 #elif defined(ESP32S3)
 
+#define BOARD_NAME "ESP32S3"
 #define PIN_LED 2
 #define PIN_VBAT 1
 #define VBAT_SCALE 2
@@ -52,6 +71,7 @@
 //ESP32
 #else
 
+#define BOARD_NAME "ESP32"
 #define PIN_LED 21
 #define PIN_VBAT 35
 #define VBAT_SCALE 2
