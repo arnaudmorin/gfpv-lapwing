@@ -42,6 +42,7 @@ To build a timer you will need:
 - An ESP32 breakout board, preferably with USB. The codebase is plug and play with `LilyGo T-ENERGY` which has a built in 1s 18650 Li-Ion cell slot and voltage sensing circuit out of the box. Supported boards:
     - LilyGo T-ENERGY - recommended.
     - LilyGo T-CELL - more expensive than the one above but has a charging circuit.
+    - LilyGo T-Energy S3 - build with the `T-Energy-S3` PlatformIO env (battery sense is hardwired to GPIO3, buzzer goes to GPIO4).
     - ESP32-DevKit - bare bones but cheap.
 - An RX5808 VRx module with [SPI mod](https://sheaivey.github.io/rx5808-pro-diversity/docs/rx5808-spi-mod.html).
 - A voltage supply of any sort - a battery, a powerbank, etc. It will depend on the ESP32 module used.
@@ -102,11 +103,13 @@ To build the firmware, click the `PlatformIO` icon in the toolbar on the left, w
 
 Before attempting to flash ensure there is a connection between the ESP32 and the computer via USB. Click the `PlatformIO` icon in the toolbar on the left, which will show the list of tasks. Now, select `Project Tasks`, expand your target (`ESP32`, `ESP32C3` or `ESP32S3`) -> `General` and select `Upload`. You should see the result in the terminal (`Success`). That's it! Your timer is ready to use.
 
-From the command line, the same is `pio run -e ESP32 -t upload` (or `-e ESP32C3` / `-e ESP32S3`).
+From the command line, the same is `pio run -e ESP32 -t upload` (or `-e ESP32C3` / `-e ESP32S3` / `-e T-Energy-S3`).
 
 If something went wrong - please check the Terminal, too. It will contain at least a hint of what the issue is.
 
 **Upgrading a timer running the original WiFi PhobosLT firmware:** the first Bluetooth firmware has to be flashed over USB. The stored settings are reset once to defaults, because the WiFi fields were removed from them. There is no file system image to upload anymore.
+
+**T-Energy S3 owners coming from the generic `ESP32S3` firmware:** the generic build reports board `ESP32S3`, so the app would keep offering it the generic image. Flash `T-Energy-S3.bin` once over USB (`pio run -e T-Energy-S3 -t upload`); from then on the timer reports board `T-Energy-S3` and the app offers the matching image over Bluetooth automatically.
 
 #### Updating over Bluetooth
 
@@ -132,7 +135,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 You don't have to build anything yourself: every push to `main` publishes a GitHub release `v1.0.<run number>` on the [Releases](https://github.com/arnaudmorin/fpv-android-ble-timer/releases) page with:
 - `GFPV-Lapwing-v1.0.<n>.apk` - the signed Android app, with the firmware of the same release inside. Each release installs as an update of the previous one.
-- `GFPV-Lapwing-firmware-ESP32-v1.0.<n>.bin`, `...-ESP32C3-...` and `...-ESP32S3-...` - the firmware for each chip, to [install from the app](#updating-over-bluetooth). The app shows the timer's firmware version as `1.0.<n>`.
+- `GFPV-Lapwing-firmware-ESP32-v1.0.<n>.bin`, `...-ESP32C3-...`, `...-ESP32S3-...` and `...-T-Energy-S3-...` - the firmware for each target, to [install from the app](#updating-over-bluetooth). The app shows the timer's firmware version as `1.0.<n>`.
 
 This is done by `.github/workflows/build.yml`, which also runs the unit tests and lint. Pull requests are built and tested without a release. Local firmware builds report their version as `dev`.
 

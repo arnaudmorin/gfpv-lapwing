@@ -17,12 +17,25 @@ object BundledFirmware {
         runCatching { ctx.assets.open("$DIR/version.txt").bufferedReader().use { it.readText().trim() } }
             .getOrNull()?.takeIf { it.isNotEmpty() }
 
-    /** The bundled image for a timer reporting [chipModel] (e.g. "ESP32-C3"), or null if none fits. */
-    fun forChip(ctx: Context, chipModel: String): FirmwareImage? {
+    /**
+     * The bundled image for a timer reporting [chipModel] (e.g. "ESP32-S3") and [board]
+     * (the firmware's PlatformIO target name), or null if none fits. The exact board image
+     * wins over the chip's generic one — e.g. a T-Energy S3 must get T-Energy-S3.bin, not
+     * ESP32S3.bin, since both are ESP32-S3 chips but with different pinouts.
+     */
+    fun forChip(ctx: Context, chipModel: String, board: String = ""): FirmwareImage? {
         val chipId = FirmwareImage.expectedChipId(chipModel) ?: return null
-        val target = targets[chipId] ?: return null
-        val bytes = runCatching { ctx.assets.open("$DIR/$target.bin").use { it.readBytes() } }.getOrNull() ?: return null
-        return runCatching { FirmwareImage.parse(bytes) }.getOrNull()?.takeIf { it.chipId == chipId }
+        val names = buildList {
+            if (board.isNotBlank()) add(board)
+            targets[chipId]?.let { add(it) }
+        }
+        for (name in names) {
+            val bytes = runCatching { ctx.assets.open("$DIR/$name.bin").use { it.readBytes() } }.getOrNull() ?: continue
+            // If the board-specific image exists but is invalid, do NOT fall back to the
+            // generic chip image: same chip id, different pins (e.g. VBAT on GPIO1 vs GPIO3).
+            return runCatching { FirmwareImage.parse(bytes) }.getOrNull()?.takeIf { it.chipId == chipId }
+        }
+        return null
     }
 }
 
