@@ -280,7 +280,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (bundled == info.firmware) return@withContext null
         val order = compareVersions(bundled, info.firmware)
         if (order != null && order < 0) return@withContext null // the timer is newer than this app
-        val image = BundledFirmware.forChip(ctx, info.chip) ?: return@withContext null
+        val image = BundledFirmware.forChip(ctx, info.chip, info.board) ?: return@withContext null
         FirmwareOffer(image, bundled, info.firmware, newer = order != null)
     }
 

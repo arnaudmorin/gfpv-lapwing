@@ -56,9 +56,9 @@ void BleServer::init(Config *config, LapTimer *lapTimer, BatteryMonitor *batMoni
     otaCtrlChr->setCallbacks(this);
     otaDataChr->setCallbacks(this);
 
-    char info[160];
-    snprintf(info, sizeof(info), "{\"fw\":\"%s\",\"chip\":\"%s\",\"rev\":%u,\"name\":\"%s\"}",
-             FIRMWARE_VERSION, ESP.getChipModel(), ESP.getChipRevision(), name);
+    char info[192];
+    snprintf(info, sizeof(info), "{\"fw\":\"%s\",\"chip\":\"%s\",\"rev\":%u,\"name\":\"%s\",\"board\":\"%s\"}",
+             FIRMWARE_VERSION, ESP.getChipModel(), ESP.getChipRevision(), name, BOARD_NAME);
     infoChr->setValue((uint8_t *)info, strlen(info));
 
     svc->start();

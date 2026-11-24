@@ -17,7 +17,7 @@ Service UUID: `5a3e0001-7c1f-4d8b-9a6e-2f4c1b0d9e10`
 | RSSI           | `5a3e0004-7c1f-4d8b-9a6e-2f4c1b0d9e10` | notify         | `u8` filtered RSSI |
 | Lap            | `5a3e0005-7c1f-4d8b-9a6e-2f4c1b0d9e10` | notify         | `u16` lap index, `u32` lap time ms |
 | Status         | `5a3e0006-7c1f-4d8b-9a6e-2f4c1b0d9e10` | read, notify   | `u8` battery voltage ×10, `u8` running (0/1) |
-| Info           | `5a3e0007-7c1f-4d8b-9a6e-2f4c1b0d9e10` | read           | JSON `{"fw","chip","rev","name"}` |
+| Info           | `5a3e0007-7c1f-4d8b-9a6e-2f4c1b0d9e10` | read           | JSON `{"fw","chip","rev","name","board"}` — `board` is the PlatformIO target name (e.g. `T-Energy-S3`), so clients can pick the matching firmware image |
 | OTA control    | `5a3e0008-7c1f-4d8b-9a6e-2f4c1b0d9e10` | write, notify  | see OTA |
 | OTA data       | `5a3e0009-7c1f-4d8b-9a6e-2f4c1b0d9e10` | write          | raw firmware chunk |
 

@@ -153,11 +153,11 @@ data class TimerStatus(val batteryVolts: Float, val running: Boolean) {
     }
 }
 
-data class DeviceInfo(val firmware: String, val chip: String, val name: String) {
+data class DeviceInfo(val firmware: String, val chip: String, val name: String, val board: String = "") {
     companion object {
         fun parse(json: String): DeviceInfo {
             val o = JSONObject(json)
-            return DeviceInfo(o.optString("fw"), o.optString("chip"), o.optString("name"))
+            return DeviceInfo(o.optString("fw"), o.optString("chip"), o.optString("name"), o.optString("board"))
         }
     }
 }

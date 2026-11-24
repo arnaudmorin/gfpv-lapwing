@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [ESP32, ESP32C3, ESP32S3]
+        target: [ESP32, ESP32C3, ESP32S3, T-Energy-S3]
     steps:
       - uses: actions/checkout@v4
 
@@ -74,7 +74,7 @@ jobs:
         run: |
           DIR=app/src/main/assets/firmware
           mkdir -p "$DIR"
-          for T in ESP32 ESP32C3 ESP32S3; do
+          for T in ESP32 ESP32C3 ESP32S3 T-Energy-S3; do
             cp "../firmware-bins/GFPV-Lapwing-firmware-${T}-v1.0.${VERSION_CODE}.bin" "$DIR/${T}.bin"
           done
           echo "1.0.${VERSION_CODE}" > "$DIR/version.txt"
